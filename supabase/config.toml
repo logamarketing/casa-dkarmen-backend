@@ -371,6 +371,12 @@ authorization_url_path = "/oauth/consent"
 # Allow dynamic client registration
 allow_dynamic_registration = false
 
+[functions.karmen-gateway]
+# Deployed with verify_jwt enabled: callers must send Authorization: Bearer
+# <anon JWT> in addition to the x-karmen-secret application secret. Pinned here
+# so a CLI deploy can't silently flip it off (defense in depth over the secret).
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.
