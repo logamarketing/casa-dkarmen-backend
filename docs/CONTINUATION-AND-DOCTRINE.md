@@ -30,11 +30,13 @@ process lives in `docs/NEW-CLIENT-VOICE-CHECKLIST.md`; scars in `docs/bug-ledger
 ---
 
 ## Open follow-ups
-1. **`transfer_to_number` self-transfer loop risk.** The human-handoff destination
-   is currently `+526873350709` — **the same number as Karmen's own inbound line**.
-   A transfer would route the caller back into the agent. **Needs the real staff
-   number** before human handoff can be relied on. (Cowork owns the ElevenLabs
-   transfer config; flag surfaced during the Stage 2 audit.)
+1. ~~**`transfer_to_number` self-transfer loop risk.**~~ **RESOLVED 2026-07-05.**
+   The handoff destination was `+526873350709` — Karmen's own inbound line (verified
+   via the ElevenLabs phone-numbers API: that number is assigned to
+   `agent_9901k5y1...`). Edgar provided the real staff line and it was set via the
+   ElevenLabs API to **`+526878711111`** in both the `built_in_tools` and `tools[]`
+   representations; `+526873350709` now remains only as her inbound-call binding
+   (`phone_numbers[0]`), where it belongs. Self-loop eliminated.
 2. **Stage 3 = the daily-menu admin page** (edit path). Goal: staff update the
    day's menu without hand-editing a prompt or running SQL — a simple authenticated
    page writing `daily_menu` for the client-local date. Additive; the gateway and

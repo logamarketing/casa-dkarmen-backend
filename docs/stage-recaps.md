@@ -62,6 +62,7 @@
 **(d) Carry-forward + do-better-next-time**
 - **Stage 3 = the daily-menu admin page** (edit path) so the menu is updated without hand-editing anything.
 - **`transfer_to_number` currently equals Karmen's own inbound line `+526873350709`** — a self-transfer loop risk; needs the real staff number before relying on human handoff. (Both tracked in `docs/CONTINUATION-AND-DOCTRINE.md`.)
+  - **Correction 2026-07-05:** RESOLVED — real staff line `+526878711111` set via the ElevenLabs API (confirmed `+526873350709` was Karmen's own inbound number via the phone-numbers API). Self-loop eliminated; see the Stage 2 hardening pass and `CONTINUATION-AND-DOCTRINE.md` follow-up #1.
 - **Do-better (applied):** verify the ElevenLabs key is readable (`wc -c > 20`) at kickoff; record the client's Supabase org/ref at intake; seed against the client-local date and confirm via the gateway's resolved `service_date`.
 
 **(e) Risks + numbers** — Gateway latency unchanged from the 2026-07-04 measurement (184–359 ms laptop RTT; lower cloud-to-cloud; 15s per-date cache under burst). Cost negligible. Risk register: the previously-open live-call risk is **closed**; open items are the two follow-ups above (owner-gated).
