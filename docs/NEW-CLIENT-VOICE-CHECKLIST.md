@@ -66,3 +66,4 @@ Why: Cowork's MCP **cannot create ElevenLabs tools**, and the ElevenLabs web UI
 4. **Prove with the live surface + telemetry, not code-reads** — auth, happy path, one real call.
 5. **Clone the Lisa (la-bodega-backend) Level-1 voice-gateway shape** — engine identical across clients; only the data (soul) differs.
 6. **Additive only** on a client's existing systems (orders, CRM, n8n). Snapshot before you touch the live agent.
+7. **Naturalness lever = the TTS model, not Expressive Mode.** Expressive Mode forces `eleven_v3_conversational` and **drops a Professional Voice Clone (PVC)** + carries the highest latency. For a PVC voice, upgrade `eleven_flash_v2_5` → `eleven_turbo_v2_5` for warmth/expressiveness while keeping the exact voice identity (voice_id, stability, similarity, speed unchanged). Turbo is a drop-in PATCH — no re-clone, low latency (Karmen, 2026-07-05).
