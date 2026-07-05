@@ -19,6 +19,12 @@ const KARMEN_SHARED_SECRET_NEW = Deno.env.get("KARMEN_SHARED_SECRET_NEW") ?? "";
 const MENU_TZ = "America/Mazatlan";
 const CURRENCY = "MXN";
 
+// Flat delivery surcharge (pesos). The single source of truth for an order
+// total is THIS gateway, never the model's mental math (V2). compute_total sums
+// today's DB prices deterministically in code so a wrong-arithmetic total (a
+// real live-call bug: "$370" spoken for a $275 order) can never be voiced.
+const DELIVERY_FEE = 20;
+
 // Menu availability is time-sensitive (a dish sells out mid-service), so the
 // cache is short by design: a sold-out flip reflects within one TTL. The cache
 // still removes the DB round-trip from bursts of concurrent tool calls.
@@ -186,6 +192,99 @@ async function loadMenu(serviceDate: string): Promise<{ value: MenuPayload; cach
   return { value, cacheHit: false };
 }
 
+// Order-item name matching is normalized so a name the model read back from
+// get_daily_menu matches its DB row regardless of case, accents, or spacing.
+function normalizeName(s: string): string {
+  return String(s)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+interface QuoteItem {
+  nombre: string;
+  categoria?: string;
+  cantidad?: number;
+}
+interface QuoteLine {
+  nombre: string;
+  categoria: Category;
+  unit_price: number;
+  cantidad: number;
+  line_total: number;
+}
+
+// Deterministic order total. Authoritative per-item prices come from TODAY's
+// daily_menu rows (never the model), are summed here in code, plus the flat
+// delivery fee. Any item whose name can't be matched to a live row is returned
+// in `unmatched` and flips all_matched=false — the prompt must NOT confirm a
+// total until every line matched, so a mis-heard dish can't inflate/deflate the
+// bill and the model can never improvise the arithmetic (V2).
+async function computeTotal(
+  serviceDate: string,
+  items: QuoteItem[],
+  modalidad: string,
+): Promise<Record<string, unknown>> {
+  const { value } = await loadMenu(serviceDate);
+  // name -> price; plus a category-qualified key to disambiguate a name that
+  // appears in more than one category.
+  const byName = new Map<string, { price: number; category: Category }>();
+  const byCatName = new Map<string, { price: number; category: Category }>();
+  for (const cat of CATEGORIES) {
+    for (const it of value.menu[cat]) {
+      const n = normalizeName(it.name);
+      if (!byName.has(n)) byName.set(n, { price: it.price, category: cat });
+      byCatName.set(`${cat}|${n}`, { price: it.price, category: cat });
+    }
+  }
+
+  const breakdown: QuoteLine[] = [];
+  const unmatched: string[] = [];
+  let subtotal = 0;
+  for (const raw of items) {
+    const nombre = String(raw?.nombre ?? "").trim();
+    if (!nombre) continue;
+    const qtyNum = Number(raw?.cantidad);
+    const cantidad = Number.isFinite(qtyNum) && qtyNum > 0 ? Math.floor(qtyNum) : 1;
+    const n = normalizeName(nombre);
+    const cat = typeof raw?.categoria === "string" ? raw.categoria.toLowerCase() : "";
+    const hit = (cat && byCatName.get(`${cat}|${n}`)) || byName.get(n);
+    if (!hit) {
+      unmatched.push(nombre);
+      continue;
+    }
+    const line_total = hit.price * cantidad;
+    subtotal += line_total;
+    breakdown.push({ nombre, categoria: hit.category, unit_price: hit.price, cantidad, line_total });
+  }
+
+  const isDelivery = modalidad === "delivery" || modalidad === "domicilio";
+  const delivery_fee = isDelivery ? DELIVERY_FEE : 0;
+  const total = subtotal + delivery_fee;
+  const all_matched = unmatched.length === 0;
+
+  const res: Record<string, unknown> = {
+    ok: true,
+    service_date: serviceDate,
+    currency: CURRENCY,
+    modalidad: isDelivery ? "delivery" : "pickup",
+    breakdown,
+    subtotal,
+    delivery_fee,
+    total,
+    all_matched,
+    unmatched,
+  };
+  if (!all_matched) {
+    // The model must treat this as "cannot quote yet", not a total to read.
+    res.instruction =
+      "No pude confirmar el precio de uno o más platillos (ver unmatched). NO digas ni confirmes un total; verifica esos platillos con el cliente y vuelve a calcular. Nunca inventes el total.";
+  }
+  return res;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -259,6 +358,43 @@ serve(async (req) => {
         res.instruction =
           "El menú de hoy aún no está cargado. No inventes platillos ni precios; ofrece verificar o transferir con una persona.";
       }
+
+      return json(res);
+    }
+
+    if (action === "compute_total") {
+      const override = typeof body?.service_date === "string" ? body.service_date.trim() : "";
+      let serviceDate: string;
+      if (override) {
+        if (!isValidServiceDate(override)) {
+          return json({ ok: false, error: "Invalid service_date (expected YYYY-MM-DD)" }, 400);
+        }
+        serviceDate = override;
+      } else {
+        serviceDate = todayInTz(MENU_TZ);
+      }
+
+      const items = Array.isArray(body?.items) ? body.items : [];
+      const modalidad = typeof body?.modalidad === "string" ? body.modalidad.toLowerCase() : "";
+      if (items.length === 0) {
+        return json({ ok: false, error: "compute_total requires a non-empty items array" }, 400);
+      }
+
+      const started = Date.now();
+      const res = await computeTotal(serviceDate, items as QuoteItem[], modalidad);
+      const ms = Date.now() - started;
+
+      logInBackground(call_sid, "compute_total", {
+        service_date: serviceDate,
+        modalidad: res.modalidad,
+        total: res.total,
+        subtotal: res.subtotal,
+        delivery_fee: res.delivery_fee,
+        line_count: (res.breakdown as unknown[]).length,
+        unmatched: res.unmatched,
+        all_matched: res.all_matched,
+        ms,
+      });
 
       return json(res);
     }
