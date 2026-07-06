@@ -377,6 +377,12 @@ allow_dynamic_registration = false
 # so a CLI deploy can't silently flip it off (defense in depth over the secret).
 verify_jwt = true
 
+[functions.karmen-menu-admin]
+# Write path (Stage 3). Same fail-closed posture as the gateway: verify_jwt on, so
+# callers must send Authorization: Bearer <anon JWT> in addition to the SEPARATE
+# x-karmen-admin-secret application secret. Pinned so a CLI deploy can't flip it off.
+verify_jwt = true
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.
