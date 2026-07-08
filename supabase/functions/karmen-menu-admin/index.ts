@@ -227,6 +227,25 @@ async function upsertItem(body: any) {
     .single();
   if (error) throw error;
 
+  // A genuinely new dish also becomes reusable for future days (build spec:
+  // "escribe uno nuevo" path ... it also lands in menu_catalog). DO NOTHING on
+  // conflict — never overwrite a curated catalog default with today's one-off
+  // price. Best-effort: a catalog-side failure must never fail the menu write
+  // that already succeeded.
+  const { error: catalogErr } = await supabase
+    .from("menu_catalog")
+    .upsert(
+      { category, item_name, default_price: price, default_sides: sides },
+      { onConflict: "category,item_name", ignoreDuplicates: true },
+    );
+  if (catalogErr) {
+    logInBackground("menu_admin_catalog_upsert_failed", {
+      category,
+      item_name,
+      error: String((catalogErr as any)?.message ?? catalogErr),
+    });
+  }
+
   logInBackground("menu_admin_upsert_item", { service_date: r.date, category, item_name, price });
   return json({ ok: true, item: { ...data, price: Number((data as any).price) } });
 }
