@@ -28,7 +28,7 @@ const ADMIN_SECRET_NEW = Deno.env.get("KARMEN_ADMIN_SECRET_NEW") ?? "";
 const MENU_TZ = "America/Mazatlan";
 const CURRENCY = "MXN";
 
-const CATEGORIES = ["comida", "bebida", "extra"] as const;
+const CATEGORIES = ["desayuno", "comida", "bebida", "extra"] as const;
 type Category = (typeof CATEGORIES)[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -37,7 +37,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 const corsHeaders: Record<string, string> = {
   "access-control-allow-origin": "*",
-  "access-control-allow-headers": "content-type,x-karmen-admin-secret,authorization",
+  "access-control-allow-headers": "content-type,x-karmen-admin-secret,authorization,apikey",
   "access-control-allow-methods": "POST,OPTIONS",
 };
 
@@ -195,7 +195,7 @@ async function upsertItem(body: any) {
 
   const category = typeof body?.category === "string" ? body.category.toLowerCase() : "";
   if (!CATEGORIES.includes(category as Category)) {
-    return json({ ok: false, error: "category debe ser comida, bebida o extra." }, 400);
+    return json({ ok: false, error: "category debe ser desayuno, comida, bebida o extra." }, 400);
   }
   const item_name = typeof body?.item_name === "string" ? body.item_name.trim() : "";
   if (!item_name) return json({ ok: false, error: "item_name es obligatorio." }, 400);

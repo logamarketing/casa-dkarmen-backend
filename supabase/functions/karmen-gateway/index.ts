@@ -33,7 +33,7 @@ const MENU_CACHE_MS = (() => {
   return Number.isFinite(n) && n >= 0 ? n : 15_000;
 })();
 
-const CATEGORIES = ["comida", "bebida", "extra"] as const;
+const CATEGORIES = ["desayuno", "comida", "bebida", "extra"] as const;
 type Category = (typeof CATEGORIES)[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -141,7 +141,7 @@ async function loadMenu(serviceDate: string): Promise<{ value: MenuPayload; cach
   if (error) throw error;
 
   const rows = Array.isArray(data) ? data : [];
-  const menu: Record<Category, MenuItem[]> = { comida: [], bebida: [], extra: [] };
+  const menu: Record<Category, MenuItem[]> = { desayuno: [], comida: [], bebida: [], extra: [] };
   let dropped = 0;
 
   for (const r of rows) {
