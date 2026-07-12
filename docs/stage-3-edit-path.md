@@ -222,11 +222,26 @@ past days immutable); the documented hardening path if this ever widens is a use
 | `delete_item` | `{action, id}` | remove one dish. Past date → 400. |
 | `copy_day` | `{action, to_date?, from_date?}` | clone latest prior day → target; **ON CONFLICT DO NOTHING** (never clobbers edits). Returns `{from_date,to_date,source_count,skipped_existing,inserted}`. |
 
-**Validation/guardrails enforced in code:** `category ∈ {comida,bebida,extra}`;
+**Validation/guardrails enforced in code:** `category ∈ {desayuno,comida,bebida,extra}`;
 `price ≥ 0` finite; `item_name` required; **service_date in the past is never
 writable** (a served day is history); "today" resolved in **America/Mazatlan**
 (byte-identical to the gateway). Errors are clean Spanish JSON; raw DB text never
 leaks. Best-effort audit to `voice_events` (`menu_admin_*` events).
+
+**2026-07-12 — `desayuno` added to the admin app's category whitelist.**
+`daily_menu` and `menu_catalog` already carried `category='desayuno'` rows
+(added out-of-band, ahead of this repo's migration history — see
+`20260712120000_allow_desayuno_category.sql`, which catches the CHECK
+constraints up to what was already live). `karmen-menu-admin`'s `CATEGORIES`
+whitelist now includes it, so the owner's app can manage breakfast rows
+end-to-end (`list_day`/`list_catalog`/`upsert_item`/`set_available`/
+`delete_item`/`copy_day` all treat it like any other category — `copy_day` in
+particular never filtered on `CATEGORIES`, so it already carried desayuno rows
+across once they were writable). **This is admin-only.** `karmen-gateway`
+(the voice-agent read path) still deliberately excludes `desayuno` from
+`get_daily_menu`, and Karmen's system prompt still refuses breakfast requests
+— see the Standing-breakfast section above. Lifting that is its own
+coordinated backend+prompt cycle, not part of this change.
 
 **Proven live (throwaway date 2026-09-09, cleaned up):** fail-closed 401 (no/wrong
 secret) · list_catalog=38 · copy_day=38 from 2026-07-05 · upsert Cazuela→999 ·
