@@ -68,13 +68,12 @@ still carries the old number and the model may blend them.
 
 ---
 
-## MCP server (1)
+## MCP server (1) — ~~attached~~ **DETACHED 2026-07-19**
 
-### "Menu del dia" — `H2Gc9CPREDxMsH6hN1sN` (created 2025-09-25, attached to Karmen; `auto_approve_all`)
+### "Menu del dia" — `H2Gc9CPREDxMsH6hN1sN` (created 2025-09-25; **detached from Karmen 2026-07-19, owner-authorized**)
 - **URL:** `https://docs.google.com/document/d/1NYsiwXD1gJzKvmu2TH_HR968ZRhz6MGz2Zl-hVwepxw/export?format=txt`
 - Transport `STREAMABLE_HTTP`, no auth headers, `approval_policy: auto_approve_all`,
-  `response_timeout_secs: 30`. Dependent agents: Karmen (live) — and any duplicate
-  inherits it.
+  `response_timeout_secs: 30`.
 - **This is not actually an MCP server.** It is a Google Doc plain-text export URL
   registered *as* one. A doc export cannot speak the MCP protocol, so tool listing
   from it should fail — consistent with the overnight harness never seeing its
@@ -84,15 +83,36 @@ still carries the old number and the model may blend them.
   menu at "$ciento diez" ($110)** — the pre-correction price that Stage 1 fixed to
   $120. If ElevenLabs ever *did* surface this source (or someone "fixes" the MCP
   wiring), Karmen would have a second, wrong, uncontrolled menu.
-- No evidence it reaches the model today: 173 overnight harness turns + all
-  regression sims produced zero $110 quotes and zero off-`daily_menu` dishes.
+- No evidence it reaches the model live: 173 overnight harness turns + all
+  regression sims (7/18 AND the 7/19 removal-verification pass) produced zero
+  $110 quotes and zero off-`daily_menu` dishes.
+
+**REMOVED 2026-07-19 (owner-authorized cleanup pass).** Snapshot taken first:
+`.karmen-agent-rollback-20260719-075607-remove110.json`. Confirmed via
+`GET /v1/convai/mcp-servers/H2Gc9CPREDxMsH6hN1sN` that **Karmen was the only
+dependent agent** (the earlier harness duplicate had already been deleted), so
+detaching was safe with no blast radius beyond Karmen. Action taken:
+**detached only** — `PATCH /v1/convai/agents/{id}` with
+`conversation_config.agent.prompt.mcp_server_ids: []`. The MCP-server *object*
+itself (id `H2Gc9CPREDxMsH6hN1sN`) was **not hard-deleted** — it still exists in
+the ElevenLabs workspace with zero dependent agents, and a full delete is a
+separate, later, more-irreversible step (queued below).
+Verification: live `GET` on the agent shows `mcp_server_ids: []` (was
+`['H2Gc9CPREDxMsH6hN1sN']`); every other field (prompt, llm, backup_llm_config,
+turn, tts, asr, tool_ids, built-in tools, knowledge_base, first_message,
+language, phone_numbers, platform_settings) is byte-identical to the snapshot.
+Post-detach regression sims (delivery/pickup/menu_not_set) **ALL PASS** — mode
+asked before total, $120 unit price / $260 delivery total spoken exactly, no
+`$110`/`ciento diez` anywhere in any transcript, honest `menu_not_set`; 18
+agent turns scanned, **0 leaks**.
 
 ---
 
 ## Owner decisions queued (NOT taken here)
-1. **Remove or archive the "Menu del dia" MCP server** — it's a stale-price relic;
-   nothing should compete with `get_daily_menu`. (Recommended, but it's a live
-   agent-config deletion → owner-gated.)
+1. ~~**Remove or archive the "Menu del dia" MCP server**~~ **DONE 2026-07-19**
+   (detached from Karmen; see above). **Still open:** hard-delete the orphaned
+   MCP-server object `H2Gc9CPREDxMsH6hN1sN` itself once confirmed no future
+   agent needs it — that's the fully-irreversible step, deliberately deferred.
 2. **Desayuno docx vs `daily_menu.desayuno`** — pick one source; if `daily_menu`
    wins (recommended), retire doc 4.
 3. **Extras/Bebidas docs vs `daily_menu`** — same call as #2 for docs 1–2.
