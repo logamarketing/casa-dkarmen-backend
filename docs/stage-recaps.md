@@ -66,3 +66,26 @@
 - **Do-better (applied):** verify the ElevenLabs key is readable (`wc -c > 20`) at kickoff; record the client's Supabase org/ref at intake; seed against the client-local date and confirm via the gateway's resolved `service_date`.
 
 **(e) Risks + numbers** — Gateway latency unchanged from the 2026-07-04 measurement (184–359 ms laptop RTT; lower cloud-to-cloud; 15s per-date cache under burst). Cost negligible. Risk register: the previously-open live-call risk is **closed**; open items are the two follow-ups above (owner-gated).
+
+---
+
+## V10 Model-Hardening Recap — "Model & mouth" overnight pass (2026-07-17/18)
+
+*Follow-on to the same-day modalidad gate (K9, deployed 2026-07-17). Owner-authorized autonomous overnight run; deploy gates owned by auto-rollback discipline. Numbers from real measurement (WebSocket harness with synthesized caller audio; simulate-conversation for behavior gates).*
+
+**(a) What shipped**
+- LIVE agent `agent_9901k5y1nqype69akbe3j8swwwat` PATCHed: LLM `gpt-5-mini`@`minimal` → **`gpt-4.1`** (non-reasoning), `backup_llm_config` `{override, []}` → **`{override, [gpt-4.1-mini, gpt-4o]}`**. Prompt/tools/voice/turn settings byte-identical to the pre-change snapshot (`.karmen-agent-rollback-20260717-214256-pre-stage2.json` — the rollback target, kept).
+- Karmen-adapted leak harness (Spanish scenarios; no script ever confirms an order) — scratchpad-only, reusable; per-run server-side rescan + turn metrics.
+
+**(b) What the gates found**
+- **gpt-4.1 on turn_v2: 173 agent turns total (128 duplicate-agent + 45 live acceptance), 0 V10-class leaks, `order_ready` never fired.** Regression gate on live: asks recoger/domicilio before any total-framed amount; totals verbatim from `compute_total` (240/260); `menu_not_set` honest.
+- **`claude-haiku-4-5` REJECTED on behavior** (order mental math before mode — K8/K9 shape) despite 65 leak-free turns.
+- **`turn_v3` measured, deferred:** end-of-turn 2611→1532ms (−41%) with 0 V10 leaks — strongest dead-air lever yet; adoption left as a daytime owner decision with one live call.
+- Residual: gpt-4.1 sometimes says "te anoto…" (customer-directed; prompt's K7 word-ban technically hit; incumbent said worse on record) — logged in K10, morning-call listen item.
+- Discovery: 4 undocumented ElevenLabs KB docs + an MCP server on the agent; hours answers come from the KB; static desayuno docx = V5 drift risk (K10).
+
+**(c) Fixed/hardened** — live model chain per V10; judge-script false positives fixed during the run (menu unit-price vs total-framing; mode-question regex window) — both documented by transcript evidence before any gate ruling.
+
+**(d) Carry-forward** — owner decisions queued: adopt turn_v3 after one live-call check; "anoto" one-word prompt tweak; KB docs → tables or documented+dated. Stage-1 (K9) and Stage-2 (V10) working trees both uncommitted; Edgar commits after the morning acceptance call.
+
+**(e) Risks + numbers** — LLM TTFB median: baseline ~815ms → 587/603ms (duplicate) and 542ms (live). End-of-turn (harness context): 2611–2957ms on turn_v2, 2190ms in the live acceptance battery; turn_v3 candidate at 1532ms. Cost: ~15 harness conversations + sims (TTS/LLM credits, single-digit dollars). Risk register: live line spent ~4h overnight on the new chain with all gates green; rollback is one PATCH from the snapshot.
