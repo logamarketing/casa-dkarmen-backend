@@ -89,3 +89,29 @@
 **(d) Carry-forward** — owner decisions queued: adopt turn_v3 after one live-call check; "anoto" one-word prompt tweak; KB docs → tables or documented+dated. Stage-1 (K9) and Stage-2 (V10) working trees both uncommitted; Edgar commits after the morning acceptance call.
 
 **(e) Risks + numbers** — LLM TTFB median: baseline ~815ms → 587/603ms (duplicate) and 542ms (live). End-of-turn (harness context): 2611–2957ms on turn_v2, 2190ms in the live acceptance battery; turn_v3 candidate at 1532ms. Cost: ~15 harness conversations + sims (TTS/LLM credits, single-digit dollars). Risk register: live line spent ~4h overnight on the new chain with all gates green; rollback is one PATCH from the snapshot.
+
+---
+
+## Cleanup-Pass Recap — anotar ban + turn_v3 adoption + KB/MCP inventory (2026-07-18, daytime, owner-directed autonomous)
+
+*Executes the three owner items queued by the V10 recap. Snapshot-first; every change proven on a duplicate agent before the live PATCH; numbers from real measurement (WebSocket leak harness + mocked simulate-conversation). Nothing committed — commit stays gated on Edgar's acceptance call.*
+
+**(a) What shipped**
+- **LIVE agent PATCH** (`agent_9901k5y1nqype69akbe3j8swwwat`): exactly two fields changed vs the pre-pass snapshot `.karmen-agent-rollback-20260718-113946-cleanup.json` (verified field-by-field: tools/TTS/KB/MCP/phone byte-identical) — (1) **prompt**: K7 hardening — anotar/apuntar banned in any conjugation + replacement phrasing ("claro / va / perfecto") + "Apunta lo que te den"→"Quédate con lo que te den"; (2) **`turn_model`: turn_v2 → turn_v3**.
+- **Repo:** `docs/agent-prompts/karmen-system-prompt.txt` synced to live; harness persisted to `scripts/karmen_leak_harness.py` + `scripts/karmen_regression_sims.py` (with this pass's judge fixes); `docs/elevenlabs-kb-and-mcp-inventory-2026-07-18.md` (Fix 3); ledger K7/K10 addenda + new K11.
+
+**(b) What the gates found**
+- **Fix 1 proof (duplicate, prompt-only on turn_v2):** 135 agent turns / **0 leaks** on a STRICTER scanner (all anotar/apuntar conjugations added); mocked sims ALL PASS.
+- **Fix 2 proof (combined config):** duplicate 136 turns + live 63 turns = **199 turns / 0 leaks / `order_ready` never fired**; sims ALL PASS on duplicate AND live (K9 mode-before-total, honest `menu_not_set`, totals 240/260 verbatim). Session total on the new prompt: **334 agent turns, 0 process-narration hits.**
+- **Latency (the point of turn_v3):** live end-of-turn median **1325–1619 ms vs 2190 ms** overnight on turn_v2 (−26 to −40%); duplicate 1456–1630 vs 2702–3444 same-session turn_v2. LLM TTFB flat (546–604 vs 542 ms) — no regression.
+- **Fix 3 discovery upgraded:** the attached "MCP server" is a **publicly-readable Google Doc still serving the menu at $110** (pre-Stage-1 price) — a fenced V5 relic, not an active leak (0 off-tool prices in all 173 overnight + 334 today's turns). Desayuno docx ($115/$140, 2026-03-28) now competes with live `daily_menu.desayuno`. Full inventory + owner-decision list in the dated doc; K11 carries the prevention rule.
+- Real-world side-proof: today's menu was genuinely unseeded during the pass → live marathon runs exercised `menu_not_set` for real; she stayed fail-closed, offered transfer, answered hours from the KB.
+
+**(c) Fixed / hardened** — two judge false-positives fixed with transcript evidence BEFORE any gate ruling (mode-question regex window 40→90 chars; menu unit-price "a ciento veinte cada uno" ≠ pre-mode total — K9 forbids totals, not menu reads). Harness scanner permanently stricter. Duplicate agent deleted after the pass (K10 rule).
+
+**(d) Carry-forward**
+- **Edgar's acceptance call remains THE gate**: one live call, then commit everything (K9 + K10 + this pass are all uncommitted by design).
+- Owner decisions from K11: remove/archive the stale-$110 "Menu del dia" pseudo-MCP (recommended), resolve desayuno-docx vs `daily_menu`, Extras/Bebidas docs vs `daily_menu`.
+- 2026-07-18 `daily_menu` was unseeded during the pass — staff's daily update workflow, not touched here (additive-only).
+
+**(e) Risks + numbers** — ~17 harness conversations + 9 sims this pass (TTS/LLM credits, single-digit dollars). Live line carried the new config through the acceptance battery with every gate green. Rollback for the whole pass = one PATCH restoring `prompt` + `turn_model` from `.karmen-agent-rollback-20260718-113946-cleanup.json`.
