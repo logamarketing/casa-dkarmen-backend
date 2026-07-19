@@ -25,6 +25,12 @@ const CURRENCY = "MXN";
 // real live-call bug: "$370" spoken for a $275 order) can never be voiced.
 const DELIVERY_FEE = 20;
 
+// Fulfillment modes the CALLER can actually choose. compute_total refuses to
+// quote until one of these arrives: a mode-less call must never default to a
+// pickup total, or the spoken amount jumps +$20 when delivery emerges (K9).
+const PICKUP_MODES = ["pickup", "recoger"];
+const DELIVERY_MODES = ["delivery", "domicilio"];
+
 // Menu availability is time-sensitive (a dish sells out mid-service), so the
 // cache is short by design: a sold-out flip reflects within one TTL. The cache
 // still removes the DB round-trip from bursts of concurrent tool calls.
@@ -260,7 +266,7 @@ async function computeTotal(
     breakdown.push({ nombre, categoria: hit.category, unit_price: hit.price, cantidad, line_total });
   }
 
-  const isDelivery = modalidad === "delivery" || modalidad === "domicilio";
+  const isDelivery = DELIVERY_MODES.includes(modalidad);
   const delivery_fee = isDelivery ? DELIVERY_FEE : 0;
   const total = subtotal + delivery_fee;
   const all_matched = unmatched.length === 0;
@@ -375,9 +381,40 @@ serve(async (req) => {
       }
 
       const items = Array.isArray(body?.items) ? body.items : [];
-      const modalidad = typeof body?.modalidad === "string" ? body.modalidad.toLowerCase() : "";
+      // Accept the natural spoken forms too ("a domicilio", "para recoger") by
+      // stripping a leading preposition; ambiguous forms ("para llevar") stay
+      // unmatched and fall through to mode_missing — ask, never guess.
+      const modalidadRaw = body?.modalidad;
+      const modalidad = typeof modalidadRaw === "string"
+        ? modalidadRaw.toLowerCase().trim().replace(/^(?:para|a)\s+/, "")
+        : "";
       if (items.length === 0) {
         return json({ ok: false, error: "compute_total requires a non-empty items array" }, 400);
+      }
+
+      // Mode is REQUIRED before any quote (K9, V2's sibling): a mode-less call
+      // used to default to a pickup total — spoken, then jumping +$20 when the
+      // caller chose delivery. Mirror the all_matched:false "cannot quote yet"
+      // shape: ok:true + HTTP 200 so ElevenLabs delivers the instruction to the
+      // model, mode_missing flag, NO total/subtotal/breakdown to read.
+      if (!PICKUP_MODES.includes(modalidad) && !DELIVERY_MODES.includes(modalidad)) {
+        logInBackground(call_sid, "compute_total", {
+          service_date: serviceDate,
+          mode_missing: true,
+          modalidad: null,
+          // Truly raw (pre-coercion) so telemetry shows which token to whitelist
+          // next; JSON-encoded to distinguish "", null, absent, and non-strings.
+          modalidad_raw: modalidadRaw === undefined ? null : (JSON.stringify(modalidadRaw) ?? "null").slice(0, 60),
+        });
+        return json({
+          ok: true,
+          service_date: serviceDate,
+          currency: CURRENCY,
+          mode_missing: true,
+          spoken_message: "¿Va a ser para recoger, o te lo mandamos a domicilio?",
+          instruction:
+            "Aún no sabes si el pedido es para recoger o a domicilio. NO digas ni confirmes ningún total todavía; pregunta con calidez si es para recoger o a domicilio y vuelve a calcular ya con la modalidad. Nunca inventes el total.",
+        });
       }
 
       const started = Date.now();
@@ -386,6 +423,7 @@ serve(async (req) => {
 
       logInBackground(call_sid, "compute_total", {
         service_date: serviceDate,
+        mode_missing: false,
         modalidad: res.modalidad,
         total: res.total,
         subtotal: res.subtotal,
