@@ -797,15 +797,31 @@ serve(async (req) => {
       const windowItemCount = allowed.reduce((n, c) => n + windowMenu[c].length, 0);
       const windowEmpty = windowItemCount === 0;
 
+      // TELEMETRY ONLY — never served, never branched on. Computed against the
+      // CLOCK's window rather than the enforced one, so the shadow row shows the
+      // rule's real effect before cutover. The original bug: this was logged as
+      // `windowItemCount`, which pre-cutover is derived from an unfiltered
+      // `allowed` and therefore always equalled `item_count` (61 == 61 in BOTH
+      // windows) — a shadow number that could not differ from the unfiltered one
+      // is decorative, and it manufactured confidence the data never earned.
+      // When hours ARE enforced this is identical to `windowItemCount` by
+      // construction (`win === serviceWindow(now)`), so the field means the same
+      // thing in both modes: what the window rule would serve.
+      const wouldServeItemCount = allowedCategories(serviceWindow(now))
+        .reduce((n, c) => n + value.menu[c].length, 0);
+
       logInBackground(call_sid, "get_daily_menu", {
         service_date: serviceDate,
         item_count: value.item_count,
-        // Logged even when unenforced (shadow mode): shows what the rules WOULD
-        // have done, so the pre-cutover data can be sanity-checked against real
-        // traffic before the switch is flipped.
+        // Both fields below are computed from the CLOCK's window even when
+        // unenforced, so a shadow row shows what enforcement WOULD have done and
+        // can be checked against real traffic before the switch is flipped.
+        // `item_count` above is what was actually served; when `hours_enforced`
+        // is false the two are expected to DIFFER — if they never differ, the
+        // shadow layer is not exercising the rule and proves nothing.
         window: win ?? `shadow:${serviceWindow(now)}`,
         hours_enforced: win !== null,
-        window_item_count: windowItemCount,
+        window_item_count: wouldServeItemCount,
         local_time: now.hhmm,
         time_overridden: now.overridden,
         menu_not_set: value.menu_not_set,
@@ -934,14 +950,24 @@ serve(async (req) => {
       // falls outside the current window we return NO total/subtotal/breakdown,
       // so there is no number for the model to voice. Blocking after the maths
       // but before the response keeps the check honest without trusting names.
-      const offWindow = winCT
-        ? (res.breakdown as QuoteLine[] | undefined ?? [])
-          .filter((l) => !allowedCategories(winCT).includes(l.categoria))
-        : [];
+      // Computed UNCONDITIONALLY (observation, not action): pre-cutover this is
+      // the ONLY evidence of whether the rule would have refused a real quote —
+      // the expensive failure direction. Previously the whole filter sat behind
+      // `winCT ? ... : []`, so in shadow mode it was never evaluated and every
+      // pre-cutover quote logged `window: null` — zero coverage on the one path
+      // that can refuse a paying customer.
+      const shadowWinCT = serviceWindow(nowCT);
+      const offWindowWouldBlock = (res.breakdown as QuoteLine[] | undefined ?? [])
+        .filter((l) => !allowedCategories(shadowWinCT).includes(l.categoria));
+      // ACTING stays gated on winCT. When enforced, winCT === shadowWinCT (the
+      // "closed" case returned above), so this is byte-identical to the old
+      // expression — the change is observational only.
+      const offWindow = winCT ? offWindowWouldBlock : [];
       if (winCT && offWindow.length > 0) {
         logInBackground(call_sid, "compute_total", {
           service_date: serviceDate,
           window: winCT,
+          hours_enforced: true,
           local_time: nowCT.hhmm,
           off_window_blocked: offWindow.map((l) => l.nombre),
         });
@@ -960,7 +986,12 @@ serve(async (req) => {
 
       logInBackground(call_sid, "compute_total", {
         service_date: serviceDate,
-        window: winCT,
+        window: winCT ?? `shadow:${shadowWinCT}`,
+        hours_enforced: winCT !== null,
+        local_time: nowCT.hhmm,
+        // Pre-cutover: which lines the window rule WOULD have refused. Empty on
+        // a quote that enforcement would have let through untouched.
+        off_window_would_block: offWindowWouldBlock.map((l) => l.nombre),
         mode_missing: false,
         modalidad: res.modalidad,
         total: res.total,
@@ -1074,10 +1105,13 @@ serve(async (req) => {
       // server-verified breakdown used for the total — an order containing a
       // dish the kitchen isn't cooking right now is refused before any insert
       // or kitchen ticket, not merely discouraged in the prompt.
-      const offWindowSO = winSO
-        ? (quote.breakdown as QuoteLine[])
-          .filter((l) => !allowedCategories(winSO).includes(l.categoria))
-        : [];
+      // Computed UNCONDITIONALLY — same reasoning as compute_total above: the
+      // write path is where a real order gets refused, so pre-cutover it needs
+      // shadow evidence too. Observation only; ACTING stays gated on winSO.
+      const shadowWinSO = serviceWindow(nowSO);
+      const offWindowWouldBlockSO = (quote.breakdown as QuoteLine[])
+        .filter((l) => !allowedCategories(shadowWinSO).includes(l.categoria));
+      const offWindowSO = winSO ? offWindowWouldBlockSO : [];
       if (winSO && offWindowSO.length > 0) {
         logInBackground(call_sid, "submit_order", {
           service_date: serviceDate,
@@ -1256,7 +1290,7 @@ serve(async (req) => {
         });
       }
 
-      logInBackground(call_sid, "submit_order", { service_date: serviceDate, conversation_id: conversationId, order_row_id: newId, total: quote.total, modalidad: fieldCheck.fields.modalidad, ok: true });
+      logInBackground(call_sid, "submit_order", { service_date: serviceDate, conversation_id: conversationId, order_row_id: newId, total: quote.total, modalidad: fieldCheck.fields.modalidad, ok: true, window: winSO ?? `shadow:${shadowWinSO}`, hours_enforced: winSO !== null, local_time: nowSO.hhmm, off_window_would_block: offWindowWouldBlockSO.map((l) => l.nombre) });
       const successRes: Record<string, unknown> = { ok: true, order_row_id: newId, spoken_message: SUCCESS_MESSAGE };
       if (isWarm) {
         // K9-style server-side discipline: the instruction arrives at the exact
