@@ -106,6 +106,10 @@ A second, independent path was also tried and blocked the same way: ElevenLabs-n
 Twilio outbound **from Karmen's own number** (throwaway caller agent, created then
 deleted) — identical "Account not authorized to call +52" refusal. Every credential we
 hold is geo-blocked; the single lever is the Twilio console geo-permissions page (Edgar).
+**Re-tested 2026-07-20 ~14:30 MZT (autonomous follow-up run): still blocked, identical
+error.** Per the pre-agreed rule, no further workaround attempts; the throwaway caller
+agent was deleted again. Both proof calls remain **NOT VERIFIED** — nothing here is
+simulated-and-called-proven; §3's two phone calls are still the definition of done.
 
 ### Edgar: call **+526873350709** from your phone, TWICE — this is the definition of done
 1. **During open hours (before 4:50 PM, not Sunday)** — confirm she offers only the
@@ -183,33 +187,64 @@ real hours, payment rules, the $20 delivery fee, and the promotions.
 2. ~~**Corrected hours KB to live NOW?**~~ — **RESOLVED 2026-07-20**: authorized and
    applied standalone. See §4. (Live now states the correct hours and the Sunday closure.)
 3. **Failure-alert bot** — `KARMEN_ALERT_BOT_TOKEN` / `KARMEN_ALERT_CHAT_ID` are still
-   **unprovisioned** (needs a @BotFather bot + chat id). Today a capture-worthy failure
-   is durably logged to `voice_events` but **no human is pinged**. Accepted fast-follow,
-   not an oversight — the gateway reports `alert_credential_missing` honestly rather
-   than faking success.
+   **unprovisioned**. Verified again 2026-07-20 (~14:45 MZT): no usable bot token exists in
+   loga-secrets, locally, or among n8n's telegramApi credentials — creating one takes
+   Edgar's Telegram account, so this cannot be done for him. Today a capture-worthy failure
+   is durably logged to `voice_events` but **no human is pinged**; the gateway reports
+   `alert_credential_missing` honestly rather than faking success.
+   **Edgar's exact steps (≈5 min):**
+   1. Telegram → **@BotFather** → `/newbot` → name `Karmen Alerts` → username e.g.
+      `KarmenAlertsBot` → copy the token.
+   2. From your own account, send the new bot any message (so it may message you back).
+   3. `supabase secrets set KARMEN_ALERT_BOT_TOKEN=<token> KARMEN_ALERT_CHAT_ID=7546093627 --project-ref edcjcehfedwxxucktxoj`
+      (7546093627 is your private chat id — the same one @Lopz2525bot already messages;
+      confirm via `curl https://api.telegram.org/bot<token>/getUpdates` after step 2.)
+   4. `supabase functions deploy karmen-gateway --project-ref edcjcehfedwxxucktxoj`
+      (redeploy re-reads env; `KARMEN_HOURS_ENFORCED=true` persists — enforcement stays on).
 4. ~~**Test rows in `ordenes_agente_voz`**~~ — **CLEANED 2026-07-20** (owner-authorized).
    Deleted ids **104, 105, 106, 110–117** (11 rows: STAGE-A-TEST-PROOF, Juan Pérez ×4,
    Ulises López ×4, Unisys Locos, Denise). Full pre-delete snapshot at
    `docs/evidence-cutover-20260720/deleted-test-rows-snapshot.json` (re-insertable).
-   **Kept, flagged for Edgar:** #108 (the documented Stage-A proof row); #107
-   (`PRUEBA FINAL SISTEMA` — a test but outside the authorized range, not deleted);
-   ids 100–103 (older null-name partials). **Say the word to delete 107 and 100–103 too.**
-5. ⚠️ **Row #118 — anomaly, left in place.** Appeared 13:32 MZT 2026-07-20: Lomo Mechado,
-   $145, but **null name/phone/modalidad** and **no submit_order telemetry**. The live
-   gateway's `submit_order` rejects null name/phone/modalidad (K5), so #118 **did not come
-   through the voice gateway** — it was written by some other path (direct insert, WhatsApp
-   agent, or a dashboard test). Provenance uncertain, so I did **not** delete it. Edgar:
-   confirm what wrote it; if a test, remove it. (It carries no `call_sid`/`conversation_id`,
-   so it is **not** evidence of a real inbound voice call.)
+   **Kept:** #108 (the documented Stage-A proof row). **#107 deleted 2026-07-20 ~14:40 MZT**
+   (owner-authorized, unambiguous `PRUEBA FINAL SISTEMA` / "ignorar"; name-guarded DELETE,
+   snapshot at `docs/evidence-cutover-20260720/deleted-row-107-snapshot.json`).
+   **ids 100–103 left in place, now with a likely explanation — see item 5.**
+5. ✅ **Row #118 — SOLVED 2026-07-20 (~14:35 MZT): it is a REAL customer web order. Do not
+   delete it.** n8n execution 70005 of **Karmen Parlanchin** (workflow `caTpYJjmQAMsZxeB`)
+   brackets the row's timestamp exactly: an order placed on **menudeldia.casadkarmen.com**
+   (iPhone, es-MX) by **Ulises Lopez / 6621768566** — 1× Lomo Mechado + 1× Coca-Cola 400ml,
+   $145, recoger. The kitchen Telegram ticket went out **with the correct data**.
+   ⚠️ **New defect found (K17):** the Parlanchin workflow's Code node **drops
+   `cliente_nombre` / `telefono` / `modalidad` / `metodo_de_pago` to null on the DB
+   insert** (the webhook body has them; the insert payload doesn't) **and hardcodes
+   `proveniencia: "Agente de Voz"`** even though the body says `Sitio Web` — so every web
+   order lands as an anonymous "voice" order in the DB. Rows **100–103** (same null-name
+   shape) are almost certainly earlier casualties of the same bug, which is why they were
+   rightly never deleted. **Fix is a mapping correction in the Parlanchin Code node — NOT
+   applied autonomously** (live revenue path, nobody watching the line); it needs a
+   supervised 10-minute edit + one test order.
 6. **Muletillas** ("órale/sale/va") — in and live; Edgar's ear decides if they stay.
 7. **n8n kitchen Telegram credential** — the Stage-A notify node feeds the same
    already-credentialed `Response` node the real orders always used (no new credential
    was trusted). Confirm this stays the intended path.
-8. 🔐 **Twilio auth token exposed — rotate.** Proving call-origination required listing the
-   Twilio account via the n8n `LoGa Number` credential; Twilio's `Accounts.json` returns
-   `auth_token` in plaintext, now sitting in n8n execution logs (execs 69967 and the
-   archived TEMP workflows). No call was placed (MX dialing is not authorized — error
-   21215). Recommend rotating `TWILIO_AUTH_TOKEN` and clearing those execution logs.
+8. 🔐 **Twilio auth token exposure — logs PURGED 2026-07-20 (~14:45 MZT); rotation queued,
+   deliberately NOT done.** The three archived `TEMP-karmen-*` workflows were permanently
+   deleted via the n8n UI (deleting a workflow purges its executions) and exec 69967 now
+   404s — evidence: `docs/evidence-cutover-20260720/n8n-token-exposure-cleanup.md`.
+   Rotation was **not** performed on purpose: it would break Karmen, Lucy, Lisa and Mary
+   integrations until each is updated, with nobody watching the live lines. The token
+   remains valid for anyone who read the logs before the purge, so **rotate when you're
+   back and watching**:
+   1. Twilio Console → Account → API keys & tokens → **Request secondary token**; or
+      directly regenerate the primary auth token.
+   2. Update the token everywhere it's used, in one sitting: the n8n `LoGa Number` /
+      Twilio credentials (n8n → Credentials), any Supabase edge-function secrets naming
+      `TWILIO_AUTH_TOKEN` across the LoGa projects, and the ElevenLabs phone-number
+      imports if they were configured with the auth token rather than an API key
+      (ElevenLabs → Phone Numbers → each Twilio number → update credentials).
+   3. Place one test call to each of Karmen (+526873350709), Lucy and Lisa's numbers to
+      confirm inbound still answers; send one kitchen ticket to confirm n8n paths.
+   4. Only then invalidate/promote per Twilio's two-token swap flow.
 
 ---
 

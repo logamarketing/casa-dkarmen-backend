@@ -340,3 +340,43 @@ bypassed the gateway — not a real voice call).
 **(f) Status: LIVE and ENFORCED.** `KARMEN_HOURS_ENFORCED=true`, initiation webhook set on
 live, corrected hours KB doc attached. Rollback is one flag + redeploy + snapshot restore (§5
 of HANDOFF-RESUME).
+
+---
+
+## V6-CUTOVER FOLLOW-UP — autonomous run, 2026-07-20 (~14:25–15:00 MZT)
+
+Owner-authorized follow-up while Edgar away. Sibling-session check ran FIRST: repos clean
+and pushed, no fresh snapshots, agent version unchanged since the cutover, and the
+"anonymous" gateway reads matched Karmen-WhatsApp n8n executions to the second — no
+concurrent operator. Enforcement stayed ON throughout; Lucy/Lisa/Mary untouched.
+
+**(a) MX geo-permission re-tested — still BLOCKED.** ElevenLabs-native outbound from
+Karmen's own number: identical "Account not authorized to call +52". Throwaway caller
+agent created and deleted; no further workarounds per the pre-agreed rule. **Both proof
+calls remain NOT VERIFIED** — Edgar's two phone calls are still the definition of done.
+
+**(b) Token-exposure logs PURGED; token NOT rotated (on purpose).** All three archived
+`TEMP-karmen-*` workflows permanently deleted via the n8n UI (workflow deletion purges
+executions); exec 69967 now 404s. Rotation deferred to a watched moment — it would break
+Karmen/Lucy/Lisa/Mary until every integration is updated. Steps queued in HANDOFF §6.8.
+Evidence: `docs/evidence-cutover-20260720/n8n-token-exposure-cleanup.md`.
+
+**(c) Row #118 SOLVED — real web order, new defect K17.** Exec 70005 of Karmen Parlanchin
+(menudeldia.casadkarmen.com, iPhone) wrote it: Ulises Lopez, Lomo Mechado + Coca, $145,
+recoger. Parlanchin's Code node nulls cliente/telefono/modalidad/pago on the DB insert and
+hardcodes proveniencia "Agente de Voz"; kitchen ticket was correct. Rows 100–103 are almost
+certainly the same bug. Fix is a supervised Code-node mapping correction — not applied
+unattended. Ledger: **K17**; generalized as voice-ledger **V19** (the other writer).
+
+**(d) Cleanup.** #107 (`PRUEBA FINAL SISTEMA`) deleted with a name-guarded DELETE after
+snapshot (`deleted-row-107-snapshot.json`). 100–103 and #118 left in place per rule
+("when in doubt, don't") — and (c) proved the doubt was warranted.
+
+**(e) Alert bot: cannot be provisioned without Edgar.** No Telegram bot token exists in
+loga-secrets, locally, or among n8n's telegramApi credentials; @BotFather needs his
+account. Exact 4-step provisioning written in HANDOFF §6.3 (~5 min, chat id 7546093627).
+
+**(f) Status: LIVE and ENFORCED, unchanged.** No agent-config, gateway, or flag changes
+this run. Still needing Edgar: the two §3 proof calls, MX geo-permission (if he wants
+machine-originated test calls ever), token rotation at a watched moment, alert-bot token,
+Parlanchin K17 fix.
