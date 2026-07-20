@@ -227,5 +227,13 @@ supabase functions deploy karmen-gateway --project-ref edcjcehfedwxxucktxoj
 - `voice-samples/` — `FINAL-D-karmen-calida.wav` (full real order on the live config),
   `HOURS-desayuno-D.wav` / `HOURS-comida-D.wav` / `HOURS-cerrado-D.wav`, plus the A–E
   voice comparison samples.
-- **Generalized lessons for every future client:** `~/Projects/loga-agent-core/docs/voice-agent-bug-ledger.md`
-  (V-series) and the `/loga-voice-agent-build` skill.
+- **Generalized lessons for every future client** — three reusable assets in
+  `~/Projects/loga-agent-core/`, none of them client-specific:
+  - `docs/voice-agent-bug-ledger.md` — **V1–V17**, the bug CLASSES (V12–V17 came from
+    this build), each with the guardrail that prevents it.
+  - `.claude/skills/loga-voice-agent-build/` — the `/loga-voice-agent-build` skill: the
+    staged path (order integrity → model/leak hardening → naturalness/voice → hours)
+    with the proof gate for each stage.
+  - `tools/voice-agent-toolkit/README.md` — the eight harnesses (the same ones in
+    `scripts/` here) plus per-tool instructions for pointing each at a NEW client.
+    Every script in `scripts/` is byte-identical to its counterpart there.
