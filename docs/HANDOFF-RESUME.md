@@ -32,7 +32,7 @@ is a map, not the territory.
 - LLM **`gpt-4.1`**, **temperature 0.4**, `turn_v3`, `speculative_turn: true`
 - Prompt: warm-v3 (`docs/agent-prompts/karmen-system-prompt-warm-v3.txt`, 7814 chars)
 - Tools (3): `tool_9801…` `get_daily_menu` · `tool_8501…` `compute_total` · `tool_0901…` `submit_order` (**sends `style:"warm"`** → rotating name-aware farewell)
-- KB (4 docs): Extras · Bebidas · **`DUinhY6brFXOlQlVNyKI` "Información" (STALE HOURS — see §4)** · Menú de Desayunos
+- KB (4 docs): Extras · Bebidas · **`xpNJs3xDhFwI8Ymv436i` "Información (horarios corregidos)" — CORRECTED HOURS, pushed live 2026-07-20, see §4** · Menú de Desayunos
 - `conversation_initiation_client_data_webhook`: **null** (not yet wired live)
 
 ### Detached / historical ids (do not re-attach without reason)
@@ -94,8 +94,8 @@ curl -s -H "xi-api-key: $(cat .el_key)" \
 # 1) Turn hours enforcement ON.
 supabase secrets set KARMEN_HOURS_ENFORCED=true --project-ref edcjcehfedwxxucktxoj
 
-# 2) Attach the CORRECTED hours KB doc to live (swap DUinhY6brFXOlQlVNyKI -> xpNJs3xDhFwI8Ymv436i;
-#    keep the other three docs; do NOT delete the original).
+# 2) [DONE 2026-07-20 — already on live, see §4] Corrected hours KB doc attached.
+#    Nothing to do here. Left in place so the cutover sequence stays readable.
 
 # 3) Set the conversation-initiation webhook on LIVE (per-agent — verified NOT workspace-wide).
 #    url = https://edcjcehfedwxxucktxoj.supabase.co/functions/v1/karmen-gateway
@@ -119,19 +119,31 @@ supabase secrets set KARMEN_HOURS_ENFORCED=true --project-ref edcjcehfedwxxucktx
 
 ---
 
-## 4. Known live issue — decide before or with cutover
+## 4. Corrected hours KB doc — **DONE on live (2026-07-20)** ✅
 
-⚠️ **Live Karmen is telling callers the wrong hours today.** The live "Información"
-KB doc (`DUinhY6brFXOlQlVNyKI`) says **8:00 AM–5:00 PM and states no Sunday rule**,
-so she can tell a caller they are open on a Sunday.
+Previously: live Karmen told callers **8:00 AM–5:00 PM with no Sunday rule** and
+could claim to be open on a Sunday (old doc `DUinhY6brFXOlQlVNyKI`).
 
-The corrected doc (`xpNJs3xDhFwI8Ymv436i`, source of truth
-`docs/kb-informacion-corrected.md`) states 7:50–4:50, desayunos to 11:30, comida
-from 11:31, **domingos CERRADO** — everything else preserved verbatim, **promo text
-untouched**. It is attached to the **duplicate only**.
+**Applied 2026-07-20, owner-authorized, as a STANDALONE truthfulness fix** — deliberately
+*not* bundled with the hours cutover. The corrected doc `xpNJs3xDhFwI8Ymv436i`
+("Información Casa D Karmen (horarios corregidos 2026-07-20)", source of truth
+`docs/kb-informacion-corrected.md`) replaced it in the agent's `knowledge_base`.
+It states 7:50–4:50, desayunos to 11:30, comida from 11:31, **domingos CERRADO** —
+everything else verbatim, **promo/$20 fee/no-transferencias untouched** (both docs
+were content-read before the swap, per scar 27).
 
-**Recommendation: push the corrected doc to live now**, independent of the voice/hours
-cutover — it is a truthfulness fix, not a behavior change. Edgar's call.
+- Snapshot: `.karmen-agent-rollback-20260720-131106-pre-kbdoc.json`
+- Field-by-field diff vs snapshot: **only** `knowledge_base[2]` `.id`/`.name`/`.type`
+  changed (+ `version_id`). Prompt (7814 chars), LLM, temperature, tool_ids,
+  first_message, TTS model/voice, ASR all verified byte-identical.
+- Verified live: states 7:50 / 4:50 and "los domingos sí cerramos todo el día";
+  no trace of the old 8:00/5:00. Regression gate **ALL PASS** (mode-before-price,
+  exact totals, verbatim farewell, honest empty menu) — the ordering path is unblocked.
+- **`KARMEN_HOURS_ENFORCED` still unset and the initiation webhook still `null`** —
+  this change touched neither. The §3 cutover is fully independent and still pending.
+
+> The old doc `DUinhY6brFXOlQlVNyKI` was **detached, never deleted** — it remains in
+> the ElevenLabs KB for rollback.
 
 **KB docs are authoritative business truth and must never be deleted** — they carry the
 real hours, payment rules, the $20 delivery fee, and the promotions.
@@ -144,7 +156,7 @@ real hours, payment rules, the $20 delivery fee, and the promotions.
 |---|---|
 | **Warm/D voice cutover (Stage B)** | `./scripts/rollback-warm-cutover.sh` — restores prompt, temperature, first_message, tool_ids, tts model/expressive, speculative_turn from `.karmen-agent-rollback-20260720-092953-warm-cutover.json` |
 | **Hours enforcement** | `supabase secrets unset KARMEN_HOURS_ENFORCED --project-ref edcjcehfedwxxucktxoj` (instantly returns live to unenforced/shadow) |
-| **Corrected KB doc** | PATCH the agent's `knowledge_base` back to `DUinhY6brFXOlQlVNyKI` (original never deleted) |
+| **Corrected KB doc** (applied 2026-07-20) | PATCH `knowledge_base[2]` back to `{"type":"file","name":"Untitled document-2.docx","id":"DUinhY6brFXOlQlVNyKI","usage_mode":"auto"}` — the original was detached, never deleted. Full pre-state: `.karmen-agent-rollback-20260720-131106-pre-kbdoc.json` |
 | **Initiation webhook** | PATCH `platform_settings.workspace_overrides.conversation_initiation_client_data_webhook = null` |
 | **Any agent change** | Every snapshot is `.karmen-agent-rollback-<ts>-<label>.json` in the repo root — PATCH the fields back |
 
@@ -153,7 +165,8 @@ real hours, payment rules, the $20 delivery fee, and the promotions.
 ## 6. Open owner decisions (engineering has no say)
 
 1. **Hours cutover** — flip the flag + KB + webhook, then the two real calls (§3).
-2. **Corrected hours KB to live NOW?** — recommended, see §4.
+2. ~~**Corrected hours KB to live NOW?**~~ — **RESOLVED 2026-07-20**: authorized and
+   applied standalone. See §4. (Live now states the correct hours and the Sunday closure.)
 3. **Failure-alert bot** — `KARMEN_ALERT_BOT_TOKEN` / `KARMEN_ALERT_CHAT_ID` are still
    **unprovisioned** (needs a @BotFather bot + chat id). Today a capture-worthy failure
    is durably logged to `voice_events` but **no human is pinged**. Accepted fast-follow,
