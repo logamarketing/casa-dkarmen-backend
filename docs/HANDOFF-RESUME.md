@@ -102,6 +102,10 @@ self-verified on live** as of 2026-07-20. The only thing engineering cannot do i
 originate a real inbound PSTN call: the LoGa Twilio account is **not authorized to dial
 +52 Mexico** (error 21215), and enabling MX geo-permissions is an account-wide
 toll-fraud/financial control that also affects Lucy & Lisa — owner's call, not automatable.
+A second, independent path was also tried and blocked the same way: ElevenLabs-native
+Twilio outbound **from Karmen's own number** (throwaway caller agent, created then
+deleted) — identical "Account not authorized to call +52" refusal. Every credential we
+hold is geo-blocked; the single lever is the Twilio console geo-permissions page (Edgar).
 
 ### Edgar: call **+526873350709** from your phone, TWICE — this is the definition of done
 1. **During open hours (before 4:50 PM, not Sunday)** — confirm she offers only the

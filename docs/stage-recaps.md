@@ -325,6 +325,12 @@ PSTN call cannot be machine-proven here: the LoGa Twilio account is not authoriz
 Lucy & Lisa) — owner's call. Left as Edgar's one action: two real calls to +526873350709, one
 in-window and one after 4:50 PM. Enforcement stays ON meanwhile (correct behaviour beats
 unenforced).
+  *Second path also tried and blocked (same day, independent verification):* ElevenLabs-native
+  Twilio outbound (`POST /v1/convai/twilio/outbound-call`) **from Karmen's own number**
+  (`phnum_7901k5yc3npkf7erm49mvz8ckhm6`) to +526873350709, via a throwaway caller agent
+  (created + deleted, live/duplicate untouched) — identical "Account not authorized to call
+  +52" refusal. So the geo-block covers every credential we hold, not just LoGa's number;
+  the single lever is the Twilio console geo-permissions page, which is Edgar's.
 
 **(e) Cleanup.** Deleted 11 clearly-named test rows (104-106, 110-117); snapshot at
 `docs/evidence-cutover-20260720/deleted-test-rows-snapshot.json`. Kept #108 (proof row) and,
