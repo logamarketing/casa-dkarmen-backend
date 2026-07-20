@@ -103,17 +103,40 @@ LEAK_PATTERNS = [
     r"\bspoken_message\b",
 ]
 
+# 2026-07-20 (eleven_v3_conversational): transcript text for this TTS model
+# arrives with spurious mid-word spaces from streaming chunk boundaries —
+# observed verbatim: "tam ales gratinados", "¿Me reg alas tu nombre". A marker
+# split that way ("an oto") would slip past a plain regex, so every scan ALSO
+# runs against a despaced copy. The despaced pass drops \b anchors (there are
+# no word boundaries once spaces are gone), which can only ADD false positives
+# — a reviewable annoyance — never hide a leak. False negatives are the
+# unacceptable direction here.
+_DESPACED_PATTERNS = [(p, re.sub(r"\\b|\s+", "", p)) for p in LEAK_PATTERNS]
+
+
 def scan(text):
     hits = []
-    for p in LEAK_PATTERNS:
-        m = re.search(p, text, re.I)
+    despaced = re.sub(r"\s+", "", text)
+    for orig, ds in _DESPACED_PATTERNS:
+        m = re.search(orig, text, re.I)
         if m:
-            hits.append((p, m.group(0)))
+            hits.append((orig, m.group(0)))
+            continue
+        m = re.search(ds, despaced, re.I)
+        if m:
+            hits.append((orig + " [despaced]", m.group(0)))
     return hits
 
 # Every ordering scenario ends with an explicit "no order" — order_ready must
 # never have a legitimate trigger. Silences (35s >> turn_timeout 7s) force the
 # silence-timeout continuation turns that leaked on Lucy's live calls.
+#
+# Stage A ONLY (2026-07-19): "complete_order" is the deliberate exception — a
+# REAL pickup order taken to completion against submit_order, run only on a
+# throwaway duplicate agent with a temporarily-seeded test menu. This is the
+# one scenario that DOES intend order_ready/submit_order to fire — it exists
+# to empirically prove (a) system__conversation_id actually arrives on a real
+# submit_order call (Gate 1) and (b) 0 leaks across a full real order flow.
 SCENARIOS = {
     "menu": [
         ("say", "Hola, buenas. ¿Qué hay hoy en el menú?"),
@@ -161,6 +184,20 @@ SCENARIOS = {
         ("say", "Mmm, déjame pensar."),
         ("silence", 35),
         ("say", "¿Sabe qué? Mejor no me haga el pedido, lo dejo para otro día. Gracias, adiós."),
+    ],
+    "complete_order": [
+        ("say", "Hola, buenas."),
+        ("say", "Quiero dos Cazuelas, ¿cuánto sería?"),
+        ("silence", 8),
+        ("say", "Para recoger."),
+        ("silence", 8),
+        ("say", "Está bien así."),
+        ("silence", 6),
+        ("say", "No, gracias, nada de tomar."),
+        ("say", "Juan Pérez, seis ocho siete nueve nueve nueve ocho ocho siete siete."),
+        ("silence", 6),
+        ("say", "Efectivo, pago con quinientos pesos."),
+        ("silence", 15),
     ],
 }
 

@@ -1,0 +1,98 @@
+{
+ "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+ "scenario": "interrupt",
+ "tag": "finalD",
+ "conversation_id": "conv_2801kxzxamj6exa847sjbnm3ak0r",
+ "events": [
+  [
+   1.2170538902282715,
+   "meta",
+   "conv_2801kxzxamj6exa847sjbnm3ak0r"
+  ],
+  [
+   2.3911609649658203,
+   "agent",
+   "\u00a1Hola, buenas! Casa D'Karmen, \u00bfqu\u00e9 se te antoja hoy?"
+  ],
+  [
+   5.2181689739227295,
+   "user_send",
+   "Hola, \u00bfme puede leer el men\u00fa de hoy?"
+  ],
+  [
+   9.33903694152832,
+   "user_stt",
+   "Hola, \u00bfme puede leer el men\u00fa de hoy?"
+  ],
+  [
+   16.860816955566406,
+   "agent",
+   "\u00a1Qu\u00e9 bueno que preguntas! Mira, hoy la cazuela est\u00e1 buen\u00edsima y tambi\u00e9n tenemos chile relleno de queso y unas flautas que salen bien doraditas, todo a ciento veinte pesos. Si se te antoja algo m\u00e1s, hay sopa de tortilla y barbacoa tambi\u00e9n. \u00bfTe gustar\u00eda saber el men\u00fa completo o con eso te animas?"
+  ],
+  [
+   21.363751888275146,
+   "user_interrupt",
+   "Perd\u00f3n que la interrumpa, \u00bftienen bebidas?"
+  ],
+  [
+   22.59025001525879,
+   "agent_corrected",
+   "\u00a1Qu\u00e9 bueno que preguntas! Mira, hoy la cazuela est\u00e1 buen\u00edsima y tambi\u00e9n tenemos chile relleno de queso y unas flautas que salen bien doraditas, todo a ciento veinte pesos. ..."
+  ],
+  [
+   26.039283990859985,
+   "user_stt",
+   "Perd\u00f3n que la interrumpa, \u00bftienen bebidas?"
+  ],
+  [
+   29.49698305130005,
+   "agent",
+   "\u00a1Claro que s\u00ed! Hoy hay t\u00e9 de jazm\u00edn, agua de jamaica y de tamarindo, adem\u00e1s de refrescos como coca-cola, fanta y sprite, todos en veinticinco pesos. \u00bfSe te antoja alguno para acompa\u00f1ar tu comida?"
+  ],
+  [
+   33.49842309951782,
+   "user_silence",
+   "35s"
+  ],
+  [
+   48.01909589767456,
+   "user_stt",
+   "..."
+  ],
+  [
+   49.05359983444214,
+   "agent",
+   "\u00bfSigues por ah\u00ed? Si quieres que te lea m\u00e1s opciones del men\u00fa o te preparo algo, dime nom\u00e1s."
+  ],
+  [
+   62.47448182106018,
+   "user_stt",
+   "..."
+  ],
+  [
+   64.36075806617737,
+   "agent",
+   "\u00bfTe gustar\u00eda que te ayude a elegir algo, o tienes alguna otra pregunta del men\u00fa? Aqu\u00ed estoy, dime qu\u00e9 se te antoja."
+  ],
+  [
+   68.49980306625366,
+   "user_send",
+   "Gracias, adi\u00f3s."
+  ],
+  [
+   69.39126396179199,
+   "agent_corrected",
+   "\u00bfTe gustar\u00eda que te ayude a elegir algo, o tienes alguna otra pregunta del men\u00fa? Aqu\u00ed estoy, dime qu\u00e9 se te..."
+  ],
+  [
+   72.09907293319702,
+   "user_stt",
+   "Gracias, adi\u00f3s."
+  ],
+  [
+   74.16332697868347,
+   "agent",
+   "\u00a1Gracias por llamar a Casa D'Karmen! Que tengas un excelente d\u00eda y aqu\u00ed te esperamos cuando se te antoje algo rico. \u00a1Hasta luego!"
+  ]
+ ]
+}

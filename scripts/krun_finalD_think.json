@@ -1,0 +1,173 @@
+{
+ "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+ "scenario": "think",
+ "tag": "finalD",
+ "conversation_id": "conv_0201kxzx57cffcpt1k94rmgy55db",
+ "events": [
+  [
+   0.397083044052124,
+   "meta",
+   "conv_0201kxzx57cffcpt1k94rmgy55db"
+  ],
+  [
+   1.4326128959655762,
+   "agent",
+   "\u00a1Hola, buenas! Casa D'Karmen, \u00bfqu\u00e9 se te antoja hoy?"
+  ],
+  [
+   4.398071050643921,
+   "user_send",
+   "Hola, quiero dos tamales gratinados."
+  ],
+  [
+   8.292294025421143,
+   "user_stt",
+   "Hola, quiero dos tamales gratinados."
+  ],
+  [
+   11.326060056686401,
+   "agent",
+   "\u00a1Uy, los tamales gratinados est\u00e1n de lujo hoy! \u00bfTe los preparo para recoger aqu\u00ed o prefieres que te los llevemos a domicilio?"
+  ],
+  [
+   15.32752799987793,
+   "user_send",
+   "\u00bfCu\u00e1nto ser\u00eda?"
+  ],
+  [
+   16.096231937408447,
+   "agent_corrected",
+   "\u00a1Uy, los tamales gratinados est\u00e1n de lujo hoy! \u00bfTe los preparo para recoger aqu\u00ed o prefieres que te los llevemos..."
+  ],
+  [
+   18.51657509803772,
+   "user_stt",
+   "\u00bfCu\u00e1nto ser\u00eda?"
+  ],
+  [
+   20.153361082077026,
+   "agent",
+   "D\u00e9jame te hago la cuenta rapidito\u2026 \u00bfme dices si los quieres para recoger o a domicilio? As\u00ed te doy el total exacto."
+  ],
+  [
+   24.154932975769043,
+   "user_send",
+   "Mmm, d\u00e9jame pensarlo un momento."
+  ],
+  [
+   28.45761013031006,
+   "user_stt",
+   "Mmm, d\u00e9jame pensarlo un momento."
+  ],
+  [
+   31.224581956863403,
+   "agent",
+   "Claro, t\u00f3mate tu tiempo, no hay prisa. Si quieres, mientras te platico que si recoges aqu\u00ed te llevas un t\u00e9 de jazm\u00edn gratis, cortes\u00eda de la casa. \u00bfTe ayudo con algo m\u00e1s mientras decides?"
+  ],
+  [
+   35.22576689720154,
+   "user_silence",
+   "35s"
+  ],
+  [
+   47.55691409111023,
+   "user_stt",
+   "..."
+  ],
+  [
+   48.626399993896484,
+   "agent",
+   "\u00bfSigues por ah\u00ed? Cuando decidas si es para recoger o a domicilio, me avisas y te doy el total enseguida."
+  ],
+  [
+   62.784090995788574,
+   "user_stt",
+   "..."
+  ],
+  [
+   63.69826412200928,
+   "agent",
+   "\u00bfTe puedo ayudar con algo m\u00e1s o ya te decidiste sobre tu pedido? Aqu\u00ed sigo, t\u00fa dime."
+  ],
+  [
+   70.22738528251648,
+   "user_silence",
+   "30s"
+  ],
+  [
+   77.23039102554321,
+   "user_stt",
+   "..."
+  ],
+  [
+   78.40037989616394,
+   "agent",
+   "\u00bfTodo bien por all\u00e1? Si necesitas tiempo, no pasa nada, aqu\u00ed te espero. Cuando quieras, me avisas c\u00f3mo prefieres tu pedido."
+  ],
+  [
+   93.26256704330444,
+   "user_stt",
+   "..."
+  ],
+  [
+   94.50521302223206,
+   "agent",
+   "\u00bfAndas por ah\u00ed todav\u00eda? Si tienes alguna duda o ya sabes c\u00f3mo quieres tu pedido, dime y te ayudo con gusto."
+  ],
+  [
+   100.22907710075378,
+   "user_send",
+   "\u00bfCu\u00e1nto ser\u00eda si me lo llevan a mi casa?"
+  ],
+  [
+   104.01944518089294,
+   "user_stt",
+   "\u00bfCu\u00e1nto ser\u00eda si me lo llevan a mi casa?"
+  ],
+  [
+   108.04672908782959,
+   "agent",
+   "Va, si te los llevamos a tu casa ser\u00edan doscientos sesenta pesos en total. \u00bfEst\u00e1 bien as\u00ed o quieres agregar algo m\u00e1s? \u00bfTe mando un agua de jamaica bien fr\u00eda para acompa\u00f1ar?"
+  ],
+  [
+   112.04830121994019,
+   "user_silence",
+   "35s"
+  ],
+  [
+   124.12611889839172,
+   "user_stt",
+   "..."
+  ],
+  [
+   125.42866516113281,
+   "agent",
+   "\u00bfTe animas con el pedido o quieres pensarlo un poquito m\u00e1s? Si necesitas agregar bebida o alg\u00fan extra, dime y lo sumamos."
+  ],
+  [
+   140.40791726112366,
+   "user_stt",
+   "..."
+  ],
+  [
+   141.90200209617615,
+   "agent",
+   "\u00bfTodav\u00eda te interesa el pedido? Si tienes cualquier duda o quieres cambiar algo, aqu\u00ed estoy para ayudarte. T\u00fa dime, \u00bfva que va?"
+  ],
+  [
+   147.05002903938293,
+   "user_send",
+   "Mejor lo dejo por hoy, no me haga el pedido por favor. Gracias, adi\u00f3s."
+  ],
+  [
+   154.52305102348328,
+   "user_stt",
+   "Mejor lo dejo por hoy. No me haga el pedido, por favor. Gracias. Adi\u00f3s."
+  ],
+  [
+   156.43148112297058,
+   "agent",
+   "\u00a1No pasa nada! Aqu\u00ed te esperamos cuando se te antoje algo, que tengas bonito d\u00eda. \u00a1Gracias por llamar a Casa D'Karmen!"
+  ]
+ ]
+}

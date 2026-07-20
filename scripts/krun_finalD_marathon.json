@@ -1,0 +1,258 @@
+{
+ "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+ "scenario": "marathon",
+ "tag": "finalD",
+ "conversation_id": "conv_3101kxzxd8xregg9faqx40hbcpws",
+ "events": [
+  [
+   0.3823988437652588,
+   "meta",
+   "conv_3101kxzxd8xregg9faqx40hbcpws"
+  ],
+  [
+   1.2254300117492676,
+   "agent",
+   "\u00a1Hola, buenas! Casa D'Karmen, \u00bfqu\u00e9 se te antoja hoy?"
+  ],
+  [
+   4.3835649490356445,
+   "user_send",
+   "Hola, buenas tardes."
+  ],
+  [
+   7.430886745452881,
+   "user_stt",
+   "Hola, buenas tardes."
+  ],
+  [
+   9.329396963119507,
+   "agent",
+   "\u00a1Qu\u00e9 gusto escucharte! \u00bfC\u00f3mo te puedo ayudar hoy, tienes antojo de algo en especial o quieres que te cuente qu\u00e9 hay en el men\u00fa?"
+  ],
+  [
+   13.331102848052979,
+   "user_send",
+   "\u00bfQu\u00e9 hay de comer hoy?"
+  ],
+  [
+   14.395042896270752,
+   "agent_corrected",
+   "\u00a1Qu\u00e9 gusto escucharte! \u00bfC\u00f3mo te puedo ayudar hoy, tienes antojo de algo en especial o quieres que te cuente qu\u00e9 hay en el..."
+  ],
+  [
+   15.885186910629272,
+   "user_stt",
+   "\u00bfQu\u00e9 hay de comer hoy?"
+  ],
+  [
+   22.322585821151733,
+   "agent",
+   "\u00a1Hoy est\u00e1 para antojarse! Mira, la cazuela sale bien servida con su arroz, tambi\u00e9n tenemos chile relleno de queso con arroz y frijol, y unas flautas de pollo o carne que van con consom\u00e9. Todo a ciento veinte pesos. \u00bfTe gustar\u00eda probar alguno de estos, o quieres que te cuente qu\u00e9 m\u00e1s hay?"
+  ],
+  [
+   26.324235916137695,
+   "user_send",
+   "Quiero una cazuela y dos aguas de jamaica."
+  ],
+  [
+   27.33712887763977,
+   "agent_corrected",
+   "\u00a1Hoy est\u00e1 para antojarse! Mira, la cazuela sale bien servida con su arroz, tambi\u00e9n tenemos chile relleno de queso con arroz y frijol, y unas flautas de pollo o..."
+  ],
+  [
+   30.285534858703613,
+   "user_stt",
+   "Quiero una cazuela y dos aguas de Jamaica."
+  ],
+  [
+   32.75528383255005,
+   "agent",
+   "\u00a1Ah, la cazuela, buen\u00edsima elecci\u00f3n! Y las aguas de Jamaica bien fr\u00edas, te van a encantar. \u00bfTe lo preparo para recoger aqu\u00ed o prefieres que te lo llevemos a domicilio?"
+  ],
+  [
+   36.75691270828247,
+   "user_send",
+   "\u00bfCu\u00e1nto ser\u00eda?"
+  ],
+  [
+   37.21267509460449,
+   "agent_corrected",
+   "\u00a1Ah, la cazuela, buen\u00edsima elecci\u00f3n! Y las aguas de Jamaica bien fr\u00edas, te van a encantar. \u00bfTe lo..."
+  ],
+  [
+   39.32640981674194,
+   "user_stt",
+   "\u00bfCu\u00e1nto ser\u00eda?"
+  ],
+  [
+   40.7800030708313,
+   "agent",
+   "\u00a1D\u00e9jame checar el total para ti! \u00bfLo vas a querer para recoger aqu\u00ed en la fonda o te lo llevamos a domicilio?"
+  ],
+  [
+   44.78078269958496,
+   "user_silence",
+   "35s"
+  ],
+  [
+   53.43818974494934,
+   "user_stt",
+   "..."
+  ],
+  [
+   54.47683572769165,
+   "agent",
+   "\u00bfSigues por ah\u00ed? Solo dime si lo quieres para recoger o a domicilio, y de volada te digo el total."
+  ],
+  [
+   68.71403479576111,
+   "user_stt",
+   "..."
+  ],
+  [
+   70.5186779499054,
+   "agent",
+   "\u00bfTe gustar\u00eda que te prepare el pedido para recoger, o prefieres que te lo llevemos a tu casa? Av\u00edsame c\u00f3mo lo quieres y te digo cu\u00e1nto es."
+  ],
+  [
+   79.7652678489685,
+   "user_send",
+   "Para recoger."
+  ],
+  [
+   83.27183485031128,
+   "user_stt",
+   "Para recoger."
+  ],
+  [
+   90.0382068157196,
+   "agent",
+   "\u00a1Listo! Ser\u00edan ciento setenta pesos por la cazuela y las dos aguas de Jamaica, \u00bfest\u00e1 bien as\u00ed? Si recoges aqu\u00ed, te llevas un t\u00e9 de jazm\u00edn gratis, cortes\u00eda de la casa."
+  ],
+  [
+   94.03989601135254,
+   "user_silence",
+   "35s"
+  ],
+  [
+   106.32423806190491,
+   "user_stt",
+   "..."
+  ],
+  [
+   108.62160086631775,
+   "agent",
+   "\u00bfTe parece bien el total de ciento setenta pesos? Si quieres, te aparto tu pedido y te reservo tu t\u00e9 de jazm\u00edn gratis para cuando vengas. \u00bfTe lo preparo as\u00ed?"
+  ],
+  [
+   124.14346289634705,
+   "user_stt",
+   "..."
+  ],
+  [
+   126.05966687202454,
+   "agent",
+   "\u00bfTodo bien? Solo dime si te parece el total y si lo pido de una vez, para que est\u00e9 listo cuando llegues."
+  ],
+  [
+   129.53951787948608,
+   "user_interrupt",
+   "Espere, mejor d\u00edgame, \u00bfhasta qu\u00e9 hora est\u00e1n abiertos?"
+  ],
+  [
+   130.478257894516,
+   "agent_corrected",
+   "\u00bfTodo bien? Solo dime si te parece el total y si lo pido de una vez, para que est\u00e9 listo cuando..."
+  ],
+  [
+   134.71028876304626,
+   "user_stt",
+   "Espere, mejor d\u00edgame, \u00bfhasta qu\u00e9 hora est\u00e1n abiertos?"
+  ],
+  [
+   137.59894490242004,
+   "agent",
+   "\u00a1Claro! Hoy estamos abiertos hasta las cinco de la tarde para comida. Si gustas, puedes pasar a recoger tu pedido en cualquier momento antes de esa hora. \u00bfTe gustar\u00eda que te lo vaya preparando?"
+  ],
+  [
+   141.6004548072815,
+   "user_silence",
+   "30s"
+  ],
+  [
+   155.08954691886902,
+   "user_stt",
+   "..."
+  ],
+  [
+   156.72055172920227,
+   "agent",
+   "\u00bfTe gustar\u00eda que te prepare la cazuela y las aguas para recoger antes de las cinco? Si tienes otra pregunta, dime con confianza."
+  ],
+  [
+   171.6020278930664,
+   "user_send",
+   "Mmm, d\u00e9jame pensar."
+  ],
+  [
+   172.05390286445618,
+   "user_stt",
+   "..."
+  ],
+  [
+   172.67190766334534,
+   "agent",
+   "\u00bfSigues ah\u00ed..."
+  ],
+  [
+   174.26524901390076,
+   "user_stt",
+   "Mmm, d\u00e9jame pensar."
+  ],
+  [
+   176.36138486862183,
+   "agent",
+   "\u00a1T\u00f3mate tu tiempo, no hay prisa! Si se te antoja otra cosa o tienes duda, aqu\u00ed estoy. \u00bfTe platico de alg\u00fan otro platillo?"
+  ],
+  [
+   177.80677390098572,
+   "user_silence",
+   "35s"
+  ],
+  [
+   190.757337808609,
+   "user_stt",
+   "..."
+  ],
+  [
+   192.7346706390381,
+   "agent",
+   "\u00bfHay algo que quieras saber o te ayudo a decidir? Si necesitas recomendaciones, dime y te cuento lo m\u00e1s pedido de hoy."
+  ],
+  [
+   206.98716187477112,
+   "user_stt",
+   "..."
+  ],
+  [
+   208.21118783950806,
+   "agent",
+   "\u00bfTodav\u00eda te interesa pedir algo o necesitas m\u00e1s tiempo? Aqu\u00ed sigo, cualquier cosa que se te ofrezca."
+  ],
+  [
+   212.80844283103943,
+   "user_send",
+   "\u00bfSabe qu\u00e9? Mejor no me haga el pedido, lo dejo para otro d\u00eda. Gracias, adi\u00f3s."
+  ],
+  [
+   221.2741219997406,
+   "user_stt",
+   "\u00bfSabe qu\u00e9? Mejor no me haga el pedido. Lo dejo para otro d\u00eda. Gracias. Adi\u00f3s."
+  ],
+  [
+   222.7116858959198,
+   "agent",
+   "\u00a1No pasa nada! Cuando se te antoje, aqu\u00ed te esperamos con gusto. Que tengas bonito d\u00eda."
+  ]
+ ]
+}

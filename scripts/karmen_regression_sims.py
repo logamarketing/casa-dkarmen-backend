@@ -27,6 +27,11 @@ MENU_EMPTY = {"ok": True, "service_date": "2026-07-17", "timezone": "America/Maz
               "menu": {"desayuno": [], "comida": [], "bebida": [], "extra": []},
               "menu_not_set": True,
               "instruction": "El menú de hoy aún no está cargado. No inventes platillos ni precios; ofrece verificar o transferir con una persona."}
+WARM_FAREWELL = "¡Gracias, Juan! Ahí te va tu pedido en un ratito. ¡Que lo disfrutes!"
+def submit_payload():
+    return {"ok": True, "order_row_id": 999, "spoken_message": WARM_FAREWELL,
+            "instruction": "La despedida se dice UNA sola vez y SOLO a través de end_call: llama end_call AHORA con el spoken_message completo como mensaje. NO escribas tú ningún texto de despedida — el sistema la dirá al colgar."}
+
 def total_payload(mode, fee, total):
     return {"ok": True, "service_date": "2026-07-17", "currency": "MXN", "modalidad": mode,
             "breakdown": [{"nombre": "Tamales Gratinados", "categoria": "comida",
@@ -52,6 +57,9 @@ EMPTY_USER = """Eres un cliente que llama a Casa D'Karmen. Hablas español, cort
 def sim(agent_id, user_prompt, mocks, tag, name):
     body = {"simulation_specification": {
         "simulated_user_config": {"language": "es", "prompt": {"prompt": user_prompt}},
+        # Required when a tool maps system__conversation_id (the simulator does
+        # not populate system dynamic variables on its own).
+        "dynamic_variables": {"system__conversation_id": f"sim-{tag}-{name}"},
         "tool_mock_config": mocks}}
     req = urllib.request.Request(
         f"https://api.elevenlabs.io/v1/convai/agents/{agent_id}/simulate-conversation",
@@ -65,11 +73,56 @@ def sim(agent_id, user_prompt, mocks, tag, name):
 PESO_RE = re.compile(r"(\bpesos?\b|\$\s*\d)", re.I)
 NUM_260 = re.compile(r"doscientos sesenta|\b260\b", re.I)
 NUM_240 = re.compile(r"doscientos cuarenta|\b240\b", re.I)
+
+# 2026-07-20 (eleven_v3_conversational): the transcript text for this TTS model
+# arrives with spurious mid-word spaces from streaming chunk boundaries —
+# observed verbatim in ksim_finalD1_pickup: "dos cientos cuarenta pesos por los
+# tam ales gratinados", "¿Me reg alas tu nombre". No LLM emits "tam ales"; the
+# spoken audio is correct (Scribe-verified on the sibling expressive battery).
+# Matching ONLY the spaced form silently fails the exact-total assertion (a
+# false FAIL) and — worse, in the leak harness — could hide a real leak whose
+# marker got split. Every content assertion therefore also runs against a
+# despaced copy of the text with a despaced pattern.
+def despace(s):
+    return re.sub(r"\s+", "", s)
+
+NUM_260_DS = re.compile(r"doscientossesenta|260", re.I)
+NUM_240_DS = re.compile(r"doscientoscuarenta|240", re.I)
+DS_OF = {NUM_260: NUM_260_DS, NUM_240: NUM_240_DS}
+
+def hit(pattern, text):
+    """True if pattern matches the text as-is OR its despaced form."""
+    if pattern.search(text):
+        return True
+    ds = DS_OF.get(pattern)
+    return bool(ds and ds.search(despace(text)))
+
+
+# 2026-07-20 (second K13 miss): the first despacing fix covered only the number
+# and farewell patterns. check_empty's regexes were left raw and R3 then FAILED
+# on CORRECT behavior — "el menú de hoy todavía  no está carg ado" carries both
+# a doubled space and a split word, so `todav[ií]a no` and `no est[aá] cargado`
+# both missed. The false-negative direction is worse: a split "tam ales" would
+# have slipped past DISH_WORDS and hidden a genuine invented dish. Any pattern
+# used as a content assertion goes through here, not through .search() directly.
+_ds_cache = {}
+
+
+def matches(pattern, text):
+    """Match `pattern` against the text, tolerating the TTS whitespace artifact."""
+    if pattern.search(text):
+        return True
+    key = pattern.pattern
+    if key not in _ds_cache:
+        _ds_cache[key] = re.compile(re.sub(r"\\b|\s+", "", key), re.I)
+    return bool(_ds_cache[key].search(despace(text)))
 # 2026-07-18: window widened 40->90 chars — warm phrasings like "¿para recoger
 # aquí en la fonda o prefieres que te lo llevemos a domicilio?" span >40 chars
 # between the two mode words (verified false positive on ksim_dupanoto_delivery).
 MODE_Q = re.compile(r"(recoger|domicilio).{0,90}(recoger|domicilio)|para recoger o", re.I)
-HONEST_EMPTY = re.compile(r"(no est[aá] (cargado|listo)|a[uú]n no|todav[ií]a no|no tenemos el men[uú])", re.I)
+# 2026-07-19: widened for warm phrasings ("ahorita no tengo cargado el menú",
+# "no tengo el menú del día") — verified honest-but-unmatched on ksim_warm1_empty.
+HONEST_EMPTY = re.compile(r"(no est[aá] (cargado|listo)|a[uú]n no|todav[ií]a no|no tenemos el men[uú]|no tengo (cargado|el men[uú])|ahorita no (tengo|hay))", re.I)
 DISH_WORDS = re.compile(r"tamal|cazuela|jamaica|chile|enchilada", re.I)
 
 def turns(out):
@@ -86,7 +139,30 @@ def turns(out):
 # in the same turn). A peso amount counts as a quote unless it is unit-framed
 # without any total-framing.
 UNIT_FRAME = re.compile(r"cada un[oa]|est[áa]n? a\b|cuesta", re.I)
+# 2026-07-20: an "invented promotion" assertion lived here briefly and was
+# REMOVED — it failed CORRECT behavior. The free Té de Jazmín on pickup is a
+# REAL, owner-confirmed promotion carried in the attached "Información" KB doc
+# ("Promoción: si recoges, recibes 1 té Jazmín gratis con tu orden" / "Pick-up
+# promo: 1 té Jazmín gratis con tu orden para llevar"). Karmen surfacing it is
+# the KB working as designed, and the 3/3-pickup-vs-0/3-delivery pattern that
+# looked like "reproducible fabrication" was her correctly applying a
+# pickup-only rule. Do NOT re-add a gate that bans free-gift language: it
+# would fail her for being right. Any future version must check the offer
+# against the KB + the item's real price, not against the prompt alone.
 TOTAL_FRAME = re.compile(r"ser[ií]an?\b|\btotal\b|queda en|\bson\b", re.I)
+# 2026-07-20: a bare total-WORD is not a total-QUOTE. Observed false FAIL on
+# ksim_hoursV6_pickup turn 5 — "están a ciento veinte pesos cada uno. ¿Para
+# recoger o a domicilio? Así te digo el total exacto" is the textbook CORRECT
+# turn (unit price + mode question + total explicitly deferred), but the word
+# "total" alone satisfied TOTAL_FRAME and overrode the unit-price exemption.
+# A quote requires the total-framing to actually sit next to a number.
+# "un"/"una" are deliberately EXCLUDED: they are articles far more often than
+# numerals, and including them made "te digo el total en un momento" read as a
+# quote. A one-peso total is not a real case; a bare "un" is not evidence.
+NUMWORD = (r"(?:\d+|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|veinte|treinta|"
+           r"cuarenta|cincuenta|sesenta|setenta|ochenta|noventa|cien|ciento|cientos|mil)")
+TOTAL_FRAME_NEAR_NUM = re.compile(
+    rf"(?:ser[ií]an?|\btotal\b|queda en|\bson\b)(?:\W+\w+){{0,2}}\W+{NUMWORD}", re.I)
 
 def check_order_flow(out, num_re, label):
     seq = turns(out)
@@ -97,24 +173,67 @@ def check_order_flow(out, num_re, label):
                 asked_mode_at = i
             if (spoke_peso_at is None and PESO_RE.search(msg)
                     and re.search(r"\d|cientos|veinte|cuarenta|sesenta", msg, re.I)
-                    and (TOTAL_FRAME.search(msg) or not UNIT_FRAME.search(msg))):
+                    and (matches(TOTAL_FRAME_NEAR_NUM, msg) or not matches(UNIT_FRAME, msg))):
                 spoke_peso_at = i
-            if spoke_total_at is None and num_re.search(msg):
+            if spoke_total_at is None and hit(num_re, msg):
                 spoke_total_at = i
         if "compute_total" in tools and compute_at is None:
             compute_at = i
     ok_mode_first = asked_mode_at is not None and (spoke_peso_at is None or asked_mode_at < spoke_peso_at)
     ok_total = spoke_total_at is not None and compute_at is not None and spoke_total_at > compute_at
-    passed = ok_mode_first and ok_total
+
+    # Naturalness-pass assertions (2026-07-19, rev 2):
+    # (a) The farewell is delivered VERBATIM from submit_order's spoken_message,
+    #     after submit_order, and EXACTLY ONCE — either as a spoken agent turn
+    #     OR inside end_call's message param (the chosen design: the platform
+    #     speaks end_call's message at hangup; both at once = double goodbye).
+    snippet = WARM_FAREWELL[1:20].lower()
+    snippet_ds = despace(snippet)  # v3_conversational mid-word-space artifact
+    submit_at = None
+    farewell_hits = []  # (index, where)
+    raw = out.get("simulated_conversation", [])
+    for i, t in enumerate(raw):
+        tools_full = t.get("tool_calls") or []
+        names = [tc.get("tool_name") for tc in tools_full]
+        if "submit_order" in names and submit_at is None:
+            submit_at = i
+        msg = (t.get("message") or "")
+        if t.get("role") == "agent" and (snippet in msg.lower() or snippet_ds in despace(msg.lower())):
+            farewell_hits.append((i, "spoken"))
+        for tc in tools_full:
+            if tc.get("tool_name") != "end_call":
+                continue
+            params = (tc.get("params_as_json") or "").lower()
+            if snippet in params or snippet_ds in despace(params):
+                farewell_hits.append((i, "end_call_message"))
+    ok_farewell = (len(farewell_hits) == 1 and submit_at is not None
+                   and farewell_hits[0][0] > submit_at)
+    # (b) No call-state narration, ever.
+    ok_no_callstate = not any(role == "agent" and re.search(r"llamada ha (finalizado|terminada|terminado)", msg, re.I) for role, msg, _ in seq)
+    # (c) Variety: no single ack-word 3+ times across the call's agent turns.
+    ACKS = ["perfecto", "claro", "listo", "con gusto", "muy bien"]
+    ack_counts = {}
+    for role, msg, _ in seq:
+        if role == "agent":
+            low = msg.lower()
+            for a in ACKS:
+                if a in low:
+                    ack_counts[a] = ack_counts.get(a, 0) + 1
+    repeats = {a: c for a, c in ack_counts.items() if c >= 3}
+    ok_variety = not repeats
+
+    passed = ok_mode_first and ok_total and ok_farewell and ok_no_callstate and ok_variety
     print(f"[{label}] asked_mode@{asked_mode_at} first_peso@{spoke_peso_at} "
-          f"compute@{compute_at} exact_total@{spoke_total_at} -> {'PASS' if passed else 'FAIL'}")
+          f"compute@{compute_at} exact_total@{spoke_total_at} "
+          f"farewell_verbatim_after_submit={ok_farewell} no_callstate={ok_no_callstate} "
+          f"variety_ok={ok_variety}{' repeats=' + str(repeats) if repeats else ''} -> {'PASS' if passed else 'FAIL'}")
     return passed
 
 def check_empty(out, label):
     seq = turns(out)
-    honest = any(role == "agent" and HONEST_EMPTY.search(msg) for role, msg, _ in seq)
-    invented = any(role == "agent" and DISH_WORDS.search(msg) for role, msg, _ in seq)
-    priced = any(role == "agent" and PESO_RE.search(msg) for role, msg, _ in seq)
+    honest = any(role == "agent" and matches(HONEST_EMPTY, msg) for role, msg, _ in seq)
+    invented = any(role == "agent" and matches(DISH_WORDS, msg) for role, msg, _ in seq)
+    priced = any(role == "agent" and matches(PESO_RE, msg) for role, msg, _ in seq)
     passed = honest and not invented and not priced
     print(f"[{label}] honest_empty={honest} invented_dishes={invented} spoke_prices={priced} -> {'PASS' if passed else 'FAIL'}")
     return passed
@@ -124,15 +243,18 @@ if __name__ == "__main__":
     mocks_delivery = {
         "get_daily_menu": {"default_return_value": json.dumps(MENU, ensure_ascii=False), "default_is_error": False},
         "compute_total": {"default_return_value": json.dumps(total_payload("delivery", 20, 260), ensure_ascii=False), "default_is_error": False},
-        "order_ready": {"default_return_value": "{\"ok\":true}", "default_is_error": False}}
+        "order_ready": {"default_return_value": "{\"ok\":true}", "default_is_error": False},
+        "submit_order": {"default_return_value": json.dumps(submit_payload(), ensure_ascii=False), "default_is_error": False}}
     mocks_pickup = {
         "get_daily_menu": {"default_return_value": json.dumps(MENU, ensure_ascii=False), "default_is_error": False},
         "compute_total": {"default_return_value": json.dumps(total_payload("pickup", 0, 240), ensure_ascii=False), "default_is_error": False},
-        "order_ready": {"default_return_value": "{\"ok\":true}", "default_is_error": False}}
+        "order_ready": {"default_return_value": "{\"ok\":true}", "default_is_error": False},
+        "submit_order": {"default_return_value": json.dumps(submit_payload(), ensure_ascii=False), "default_is_error": False}}
     mocks_empty = {
         "get_daily_menu": {"default_return_value": json.dumps(MENU_EMPTY, ensure_ascii=False), "default_is_error": False},
         "compute_total": {"default_return_value": json.dumps(MENU_EMPTY, ensure_ascii=False), "default_is_error": False},
-        "order_ready": {"default_return_value": "{\"ok\":true}", "default_is_error": False}}
+        "order_ready": {"default_return_value": "{\"ok\":true}", "default_is_error": False},
+        "submit_order": {"default_return_value": json.dumps(submit_payload(), ensure_ascii=False), "default_is_error": False}}
 
     r1 = sim(agent_id, BASE_USER.replace("{MODE}", "a domicilio"), mocks_delivery, tag, "delivery")
     p1 = check_order_flow(r1, NUM_260, "R1 delivery 260")

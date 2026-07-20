@@ -1,0 +1,143 @@
+{
+ "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+ "scenario": "deadend",
+ "tag": "finalD",
+ "conversation_id": "conv_2401kxzx09kvffaa15hjzf5vsp68",
+ "events": [
+  [
+   0.34603166580200195,
+   "meta",
+   "conv_2401kxzx09kvffaa15hjzf5vsp68"
+  ],
+  [
+   1.3054988384246826,
+   "agent",
+   "\u00a1Hola, buenas! Casa D'Karmen, \u00bfqu\u00e9 se te antoja hoy?"
+  ],
+  [
+   4.347305774688721,
+   "user_send",
+   "Hola, \u00bftienen pizza?"
+  ],
+  [
+   10.470223665237427,
+   "user_stt",
+   "Hola, \u00bftienen pizza?"
+  ],
+  [
+   13.70497179031372,
+   "agent",
+   "\u00a1Qu\u00e9 buena onda que llamaste! Mira, hoy no tenemos pizza en el men\u00fa, pero te puedo recomendar unos platillos bien sabrosos que s\u00ed tenemos. \u00bfQuieres que te cuente qu\u00e9 hay hoy para comer?"
+  ],
+  [
+   17.706504821777344,
+   "user_send",
+   "\u00bfY sushi no manejan?"
+  ],
+  [
+   18.962921857833862,
+   "agent_corrected",
+   "\u00a1Qu\u00e9 buena onda que llamaste! Mira, hoy no tenemos pizza en el men\u00fa, pero te puedo recomendar unos platillos bien sabrosos que s\u00ed..."
+  ],
+  [
+   25.250199794769287,
+   "user_stt",
+   "\u00bfY sushi no manejan?"
+  ],
+  [
+   28.28055191040039,
+   "agent",
+   "\u00a1\u00c1ndale, qu\u00e9 antojo! Pero tampoco tenemos sushi, coraz\u00f3n. Ac\u00e1 es pura cocina mexicana casera, de esas que apapachan el alma. Si quieres, te cuento qu\u00e9 platillos tenemos hoy, \u00bfte late?"
+  ],
+  [
+   32.281919956207275,
+   "user_silence",
+   "35s"
+  ],
+  [
+   49.28674674034119,
+   "user_stt",
+   "..."
+  ],
+  [
+   50.69609975814819,
+   "agent",
+   "\u00bfSigues por ah\u00ed? Si gustas, te platico del men\u00fa de hoy o te ayudo con lo que se te antoje. \u00bfQu\u00e9 dices?"
+  ],
+  [
+   64.82439875602722,
+   "user_stt",
+   "..."
+  ],
+  [
+   66.52620077133179,
+   "agent",
+   "\u00bfTe gustar\u00eda saber qu\u00e9 platillos tenemos hoy o hay algo m\u00e1s en lo que te pueda ayudar? T\u00fa dime, aqu\u00ed estoy."
+  ],
+  [
+   67.28360080718994,
+   "user_send",
+   "\u00bfTienen men\u00fa para ni\u00f1os?"
+  ],
+  [
+   68.27083277702332,
+   "agent_corrected",
+   "\u00bfTe gustar\u00eda saber qu\u00e9 platillos tenemos hoy o hay algo m\u00e1s en lo que te..."
+  ],
+  [
+   73.35577964782715,
+   "user_stt",
+   "\u00bfTienen men\u00fa para ni\u00f1os?"
+  ],
+  [
+   78.42581462860107,
+   "agent",
+   "\u00a1Qu\u00e9 gusto que preguntes! Hoy no tenemos un men\u00fa especial para ni\u00f1os, pero hay opciones suaves y ricas como hot cakes con fruta, huevos al gusto o chilaquiles que suelen gustarles mucho. \u00bfTe gustar\u00eda que te cuente m\u00e1s de esos platillos, o buscas algo en particular para los peques?"
+  ],
+  [
+   82.4273328781128,
+   "user_silence",
+   "35s"
+  ],
+  [
+   100.97516584396362,
+   "user_stt",
+   "..."
+  ],
+  [
+   102.00598478317261,
+   "agent",
+   "\u00bfQuieres que te recomiende algo para los ni\u00f1os, o prefieres escuchar todo el men\u00fa del d\u00eda? T\u00fa dime, aqu\u00ed estoy."
+  ],
+  [
+   116.83196377754211,
+   "user_stt",
+   "..."
+  ],
+  [
+   117.31658172607422,
+   "agent",
+   "\u00bfTe ayudo con alguna recomendaci\u00f3n especial, o tienes otra duda? Av\u00edsame, con confianza."
+  ],
+  [
+   117.42908072471619,
+   "user_send",
+   "Bueno, gracias de todos modos. Adi\u00f3s."
+  ],
+  [
+   120.45040678977966,
+   "agent_corrected",
+   "\u00bfTe ayudo con alguna recomendaci\u00f3n especial, o tienes..."
+  ],
+  [
+   132.5838599205017,
+   "user_stt",
+   "Bueno, gracias de todos modos. Adi\u00f3s."
+  ],
+  [
+   134.32702779769897,
+   "agent",
+   "\u00a1Gracias por llamar a Casa D'Karmen! Que tengas un d\u00eda lleno de sabor y alegr\u00eda, \u00a1te esperamos pronto!"
+  ]
+ ]
+}

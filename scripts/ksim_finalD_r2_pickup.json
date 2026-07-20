@@ -1,0 +1,773 @@
+{
+ "simulated_conversation": [
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": "¡Hola, buenas! Casa D'Karmen, ¿qué se te antoja hoy?",
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 0,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "user",
+   "agent_metadata": null,
+   "message": "Hola, buenas. Quiero dos Tamales Gratinados. ¿Cuánto sería?",
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 1,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": "¡Qué buena elección , los tam ales gratinados salen  bien sabrosos!  Déjame checar rapid ito el menú  de hoy para  ver si están  disponibles y te  digo cuánto sería …",
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": {
+    "metrics": {
+     "convai_llm_service_ttf_sentence": {
+      "elapsed_time": 0.5406618849374354
+     },
+     "convai_llm_service_ttfb": {
+      "elapsed_time": 0.5364061747677624
+     },
+     "convai_llm_service_tt_last_sentence": {
+      "elapsed_time": 1.5404193168506026
+     }
+    },
+    "convai_asr_provider": null,
+    "convai_tts_model": null,
+    "convai_tts_cascade": null
+   },
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 2,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": null,
+   "multivoice_message": null,
+   "tool_calls": [
+    {
+     "type": "webhook",
+     "request_id": "call_29wWL6HqwSL9ERoWvUKQnkdp",
+     "tool_name": "get_daily_menu",
+     "params_as_json": "{\"action\":\"get_daily_menu\"}",
+     "tool_has_been_called": false,
+     "tool_details": null
+    }
+   ],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 3,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": null,
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [
+    {
+     "request_id": "call_29wWL6HqwSL9ERoWvUKQnkdp",
+     "tool_name": "get_daily_menu",
+     "result_value": "{\"ok\": true, \"service_date\": \"2026-07-17\", \"timezone\": \"America/Mazatlan\", \"currency\": \"MXN\", \"menu_available\": true, \"item_count\": 3, \"menu\": {\"desayuno\": [], \"comida\": [{\"name\": \"Tamales Gratinados\", \"price\": 120}, {\"name\": \"Cazuela\", \"price\": 120}], \"bebida\": [{\"name\": \"Agua de Jamaica\", \"price\": 25}], \"extra\": []}}",
+     "is_error": false,
+     "is_blocked": false,
+     "tool_has_been_called": true,
+     "tool_latency_secs": 0.0,
+     "error_type": "",
+     "raw_error_message": "",
+     "dynamic_variable_updates": [],
+     "type": "webhook"
+    }
+   ],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 4,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": "Mira, sí hay  tamales gratinados hoy , y salen  a ciento veinte  pesos cada uno .  ¿Te gustaría para  recoger aquí o  prefieres que te  los llevemos a  domicilio?",
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": {
+    "metrics": {
+     "convai_llm_service_ttf_sentence": {
+      "elapsed_time": 2.0733748516067863
+     },
+     "convai_llm_service_ttfb": {
+      "elapsed_time": 2.050395861733705
+     },
+     "convai_llm_service_tt_last_sentence": {
+      "elapsed_time": 2.393844942562282
+     }
+    },
+    "convai_asr_provider": null,
+    "convai_tts_model": null,
+    "convai_tts_cascade": null
+   },
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 5,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "user",
+   "agent_metadata": null,
+   "message": "Para recoger.",
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 6,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": null,
+   "multivoice_message": null,
+   "tool_calls": [
+    {
+     "type": "webhook",
+     "request_id": "call_iwgE4AbCxvKEBMQ2j7v80AnC",
+     "tool_name": "compute_total",
+     "params_as_json": "{\"modalidad\":\"pickup\",\"items\":[{\"nombre\":\"Tamales Gratinados\",\"categoria\":\"comida\",\"cantidad\":2}]}",
+     "tool_has_been_called": false,
+     "tool_details": null
+    }
+   ],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 7,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": null,
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [
+    {
+     "request_id": "call_iwgE4AbCxvKEBMQ2j7v80AnC",
+     "tool_name": "compute_total",
+     "result_value": "{\"ok\": true, \"service_date\": \"2026-07-17\", \"currency\": \"MXN\", \"modalidad\": \"pickup\", \"breakdown\": [{\"nombre\": \"Tamales Gratinados\", \"categoria\": \"comida\", \"unit_price\": 120, \"cantidad\": 2, \"line_total\": 240}], \"subtotal\": 240, \"delivery_fee\": 0, \"total\": 240, \"all_matched\": true, \"unmatched\": []}",
+     "is_error": false,
+     "is_blocked": false,
+     "tool_has_been_called": true,
+     "tool_latency_secs": 0.0,
+     "error_type": "",
+     "raw_error_message": "",
+     "dynamic_variable_updates": [],
+     "type": "webhook"
+    }
+   ],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 8,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": "Va, serían dos cientos cuarenta pesos  por los dos  tamales gratinados. ¿ Está bien así ?  Y si gust as, hoy por  recoger te regalo  un té de  jazmín bien frío , ¿te lo  preparo también?",
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": {
+    "metrics": {
+     "convai_llm_service_ttf_sentence": {
+      "elapsed_time": 1.32955012191087
+     },
+     "convai_llm_service_ttfb": {
+      "elapsed_time": 1.3273035530000925
+     },
+     "convai_llm_service_tt_last_sentence": {
+      "elapsed_time": 1.8909285170957446
+     }
+    },
+    "convai_asr_provider": null,
+    "convai_tts_model": null,
+    "convai_tts_cascade": null
+   },
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 9,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "user",
+   "agent_metadata": null,
+   "message": "Está bien así, gracias.  No, no necesito el té,  solo los tamales.",
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 10,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": "¡Perfecto, así queda !  ¿Me dices tu  nombre y tu  número para tener  tu pedido listo  cuando llegues?",
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": {
+    "metrics": {
+     "convai_llm_service_ttf_sentence": {
+      "elapsed_time": 0.6239236327819526
+     },
+     "convai_llm_service_ttfb": {
+      "elapsed_time": 0.6194145330227911
+     },
+     "convai_llm_service_tt_last_sentence": {
+      "elapsed_time": 0.7897571278735995
+     }
+    },
+    "convai_asr_provider": null,
+    "convai_tts_model": null,
+    "convai_tts_cascade": null
+   },
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 11,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "user",
+   "agent_metadata": null,
+   "message": "Me llamo Juan Pérez, y mi número es 6871234567.",
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 12,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": "¡Gracias, Juan!  ¿ Vas a pagar   en efectivo o   con tarjeta cuando   vengas por tus   tamales?",
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": {
+    "metrics": {
+     "convai_llm_service_ttf_sentence": {
+      "elapsed_time": 0.7332873591221869
+     },
+     "convai_llm_service_ttfb": {
+      "elapsed_time": 0.6826873598620296
+     },
+     "convai_llm_service_tt_last_sentence": {
+      "elapsed_time": 0.9496855330653489
+     }
+    },
+    "convai_asr_provider": null,
+    "convai_tts_model": null,
+    "convai_tts_cascade": null
+   },
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 13,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "user",
+   "agent_metadata": null,
+   "message": "Pago con quinientos pesos en efectivo.",
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 14,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": null,
+   "multivoice_message": null,
+   "tool_calls": [
+    {
+     "type": "webhook",
+     "request_id": "call_LpVJo9CpPselgYSkQkRqf0F4",
+     "tool_name": "submit_order",
+     "params_as_json": "{\"items\":[{\"nombre\":\"Tamales Gratinados\",\"categoria\":\"comida\",\"cantidad\":2}],\"total\":240,\"cliente_nombre\":\"Juan Pérez\",\"telefono\":\"6871234567\",\"modalidad\":\"pickup\",\"metodo_de_pago\":\"cash\",\"cash_amount\":\"500\"}",
+     "tool_has_been_called": false,
+     "tool_details": null
+    }
+   ],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 15,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": null,
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [
+    {
+     "request_id": "call_LpVJo9CpPselgYSkQkRqf0F4",
+     "tool_name": "submit_order",
+     "result_value": "{\"ok\": true, \"order_row_id\": 999, \"spoken_message\": \"¡Gracias, Juan! Ahí te va tu pedido en un ratito. ¡Que lo disfrutes!\", \"instruction\": \"La despedida se dice UNA sola vez y SOLO a través de end_call: llama end_call AHORA con el spoken_message completo como mensaje. NO escribas tú ningún texto de despedida — el sistema la dirá al colgar.\"}",
+     "is_error": false,
+     "is_blocked": false,
+     "tool_has_been_called": true,
+     "tool_latency_secs": 0.0,
+     "error_type": "",
+     "raw_error_message": "",
+     "dynamic_variable_updates": [],
+     "type": "webhook"
+    }
+   ],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 16,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": null,
+   "multivoice_message": null,
+   "tool_calls": [
+    {
+     "type": "system",
+     "request_id": "call_wdXuGT9xJa8o7ELhFi1ExZFH",
+     "tool_name": "end_call",
+     "params_as_json": "{\"reason\":\"Pedido confirmado y datos completos. Despedida para el cliente.\",\"system__message_to_speak\":\"¡Gracias, Juan! Ahí te va tu pedido en un ratito. ¡Que lo disfrutes!\"}",
+     "tool_has_been_called": false,
+     "tool_details": null
+    }
+   ],
+   "tool_results": [],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 17,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  },
+  {
+   "role": "agent",
+   "agent_metadata": {
+    "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+    "branch_id": null,
+    "workflow_node_id": null,
+    "version_id": null
+   },
+   "message": null,
+   "multivoice_message": null,
+   "tool_calls": [],
+   "tool_results": [
+    {
+     "request_id": "call_wdXuGT9xJa8o7ELhFi1ExZFH",
+     "tool_name": "end_call",
+     "result_value": "{\"result_type\":\"end_call_success\",\"status\":\"success\",\"reason\":\"Pedido confirmado y datos completos. Despedida para el cliente.\",\"message\":null}",
+     "is_error": false,
+     "is_blocked": false,
+     "tool_has_been_called": true,
+     "tool_latency_secs": 0.5009848359040916,
+     "error_type": "",
+     "raw_error_message": "",
+     "dynamic_variable_updates": [],
+     "type": "system",
+     "result": {
+      "result_type": "end_call_success",
+      "status": "success",
+      "reason": "Pedido confirmado y datos completos. Despedida para el cliente.",
+      "message": null
+     }
+    }
+   ],
+   "feedback": null,
+   "llm_override": null,
+   "time_in_call_secs": 0,
+   "conversation_turn_metrics": null,
+   "rag_retrieval_info": null,
+   "llm_usage": null,
+   "interrupted": false,
+   "ignored_as_backchannel": false,
+   "original_message": null,
+   "reasoning": [],
+   "source_medium": null,
+   "source_event_id": 18,
+   "used_static_kb_document_ids": [],
+   "analysis": null,
+   "user_identifier": null,
+   "file_input": null,
+   "contextual_update_info": null,
+   "config_snapshot_id": null,
+   "reasoned": false
+  }
+ ],
+ "analysis": {
+  "evaluation_criteria_results": {},
+  "data_collection_results": {},
+  "evaluation_criteria_results_list": [],
+  "data_collection_results_list": [],
+  "call_successful": "success",
+  "call_success_score": null,
+  "transcript_summary": "The user ordered two Tamales Gratinados for pickup. The agent confirmed availability and price (240 MXN total). The user declined a complimentary tea, provided their name (Juan Pérez) and phone number, and stated they would pay 500 pesos cash. The order was then confirmed and the call ended.",
+  "call_summary_title": "Food Order Pickup",
+  "scoped": [],
+  "sentiment_analysis": null
+ },
+ "guardrails_result": null
+}

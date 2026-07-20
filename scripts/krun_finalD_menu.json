@@ -1,0 +1,103 @@
+{
+ "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+ "scenario": "menu",
+ "tag": "finalD",
+ "conversation_id": "conv_1201kxzwwmx9fdxsxh823m24373e",
+ "events": [
+  [
+   0.40436673164367676,
+   "meta",
+   "conv_1201kxzwwmx9fdxsxh823m24373e"
+  ],
+  [
+   1.218956708908081,
+   "agent",
+   "\u00a1Hola, buenas! Casa D'Karmen, \u00bfqu\u00e9 se te antoja hoy?"
+  ],
+  [
+   4.4046008586883545,
+   "user_send",
+   "Hola, buenas. \u00bfQu\u00e9 hay hoy en el men\u00fa?"
+  ],
+  [
+   8.789998769760132,
+   "user_stt",
+   "Hola, buenas. \u00bfQu\u00e9 hay hoy en el men\u00fa?"
+  ],
+  [
+   16.96085786819458,
+   "agent",
+   "Hoy est\u00e1 de antojo la cazuela con arroz, el chile relleno de queso bien servido, y unas flautas de pollo o carne que salen doraditas, todo a ciento veinte pesos cada uno. Tambi\u00e9n hay sopa de tortilla y pastel de pollo, por si se te antoja algo diferente. \u00bfTe gustar\u00eda saber qu\u00e9 bebidas tenemos o te preparo algo de una vez?"
+  ],
+  [
+   20.962329864501953,
+   "user_silence",
+   "35s"
+  ],
+  [
+   41.43284201622009,
+   "user_stt",
+   "..."
+  ],
+  [
+   42.70989680290222,
+   "agent",
+   "\u00bfHay algo que se te antoje o quieres que te cuente m\u00e1s del men\u00fa? T\u00fa dime, aqu\u00ed estoy para lo que necesites."
+  ],
+  [
+   55.96343684196472,
+   "user_send",
+   "\u00bfY cu\u00e1nto cuestan las comidas?"
+  ],
+  [
+   59.47315573692322,
+   "user_stt",
+   "\u00bfY cu\u00e1nto cuestan las comidas?"
+  ],
+  [
+   62.73126769065857,
+   "agent",
+   "Todas las comidas hoy est\u00e1n en ciento veinte pesos, ya sea la cazuela, el chile relleno, las flautas, o cualquiera de los guisados. \u00bfTe gustar\u00eda pedir algo o te platico de las bebidas?"
+  ],
+  [
+   66.73263788223267,
+   "user_silence",
+   "35s"
+  ],
+  [
+   80.73228788375854,
+   "user_stt",
+   "..."
+  ],
+  [
+   81.91845464706421,
+   "agent",
+   "\u00bfTe gustar\u00eda que te recomiende alguna bebida o te preparo ya tu pedido? T\u00fa dime, no hay prisa."
+  ],
+  [
+   94.95265674591064,
+   "user_stt",
+   "..."
+  ],
+  [
+   96.09299874305725,
+   "agent",
+   "\u00bfSigues por ah\u00ed? Si necesitas m\u00e1s info del men\u00fa o quieres pedir algo, nom\u00e1s dime."
+  ],
+  [
+   101.7397928237915,
+   "user_send",
+   "Gracias, solo quer\u00eda saber. Hasta luego."
+  ],
+  [
+   109.15198588371277,
+   "user_stt",
+   "Gracias. Solo quer\u00eda saber. Hasta luego."
+  ],
+  [
+   110.73990869522095,
+   "agent",
+   "\u00a1Con gusto! Que tengas un excelente d\u00eda, aqu\u00ed te esperamos cuando se te antoje algo rico. \u00a1Hasta luego!"
+  ]
+ ]
+}

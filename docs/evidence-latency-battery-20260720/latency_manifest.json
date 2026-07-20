@@ -1,0 +1,111 @@
+{
+ "agent_id": "agent_3101kxxq4cq8fvarsqddje6p83e0",
+ "order": [
+  "A",
+  "E",
+  "D",
+  "A",
+  "E",
+  "D",
+  "A",
+  "E",
+  "D",
+  "A",
+  "E",
+  "A",
+  "E"
+ ],
+ "calls": [
+  {
+   "i": 0,
+   "arm": "A",
+   "model": "eleven_flash_v2_5",
+   "conversation_id": "conv_9501kxztapxwehh91t8wjg08nbvq",
+   "error": null
+  },
+  {
+   "i": 1,
+   "arm": "E",
+   "model": "eleven_multilingual_v2",
+   "conversation_id": "conv_7601kxztcg5bec2axpesdgmcn4hj",
+   "error": null
+  },
+  {
+   "i": 2,
+   "arm": "D",
+   "model": "eleven_v3_conversational",
+   "conversation_id": "conv_9001kxztejyjftk9wn5wtv8dnwtj",
+   "error": null
+  },
+  {
+   "i": 3,
+   "arm": "A",
+   "model": "eleven_flash_v2_5",
+   "conversation_id": "conv_8101kxztgqd6ffe9avs2nq05mq82",
+   "error": null
+  },
+  {
+   "i": 4,
+   "arm": "E",
+   "model": "eleven_multilingual_v2",
+   "conversation_id": "conv_2601kxztk7vnfkyscv53p5neghy9",
+   "error": null
+  },
+  {
+   "i": 5,
+   "arm": "D",
+   "model": "eleven_v3_conversational",
+   "conversation_id": "conv_1801kxztnbhfedkvhvjn2ttgakmr",
+   "error": null
+  },
+  {
+   "i": 6,
+   "arm": "A",
+   "model": "eleven_flash_v2_5",
+   "conversation_id": "conv_8601kxztqpp4ef79d0xzt6avp1cj",
+   "error": null
+  },
+  {
+   "i": 7,
+   "arm": "E",
+   "model": "eleven_multilingual_v2",
+   "conversation_id": "conv_2501kxztsnt1ew7sx8k8negbp7hj",
+   "error": null
+  },
+  {
+   "i": 8,
+   "arm": "D",
+   "model": "eleven_v3_conversational",
+   "conversation_id": "conv_7001kxztw148ffxs1kvje74rwy2j",
+   "error": null
+  },
+  {
+   "i": 9,
+   "arm": "A",
+   "model": "eleven_flash_v2_5",
+   "conversation_id": "conv_4201kxzty39te2k8dkt0j9ee9gqc",
+   "error": null
+  },
+  {
+   "i": 10,
+   "arm": "E",
+   "model": "eleven_multilingual_v2",
+   "conversation_id": "conv_6701kxzv019fez1t76ygyjwa2fd4",
+   "error": null
+  },
+  {
+   "i": 11,
+   "arm": "A",
+   "model": "eleven_flash_v2_5",
+   "conversation_id": "conv_6801kxzv2528exn84njp316vhwsw",
+   "error": null
+  },
+  {
+   "i": 12,
+   "arm": "E",
+   "model": "eleven_multilingual_v2",
+   "conversation_id": "conv_7801kxzv3vn4egcsyc7br7jvj6cv",
+   "error": null
+  }
+ ]
+}

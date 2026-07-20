@@ -1,0 +1,366 @@
+{
+ "summary": {
+  "tag": "finalD",
+  "conversations": 5,
+  "agent_turns": 61,
+  "leak_turns": 0,
+  "order_ready_fired": false,
+  "median_llm_ttfb_ms": 759,
+  "median_end_of_turn_ms": 4253
+ },
+ "results": [
+  {
+   "conversation_id": "conv_1201kxzwwmx9fdxsxh823m24373e",
+   "scenario": "menu",
+   "tag": "finalD",
+   "agent_turns_client": 7,
+   "client_leak_turns": 0,
+   "server_leak_turns": 0,
+   "findings": [],
+   "order_ready_fired": false,
+   "metrics": [
+    {
+     "convai_ttf_audio_since_silence": 224,
+     "convai_tts_service_ttfb": 222
+    },
+    {
+     "convai_llm_service_ttfb": 698
+    },
+    {
+     "convai_llm_service_ttfb": 794,
+     "convai_ttf_audio_since_silence": 3188,
+     "convai_tts_service_ttfb": 288
+    },
+    {
+     "convai_llm_service_ttfb": 505,
+     "convai_ttf_audio_since_silence": 31807,
+     "convai_tts_service_ttfb": 340
+    },
+    {
+     "convai_llm_service_ttfb": 522,
+     "convai_ttf_audio_since_silence": 1309,
+     "convai_tts_service_ttfb": 307
+    },
+    {
+     "convai_llm_service_ttfb": 624,
+     "convai_ttf_audio_since_silence": 21044,
+     "convai_tts_service_ttfb": 285
+    },
+    {
+     "convai_llm_service_ttfb": 1065,
+     "convai_ttf_audio_since_silence": 14013,
+     "convai_tts_service_ttfb": 281
+    },
+    {
+     "convai_llm_service_ttfb": 3322,
+     "convai_ttf_audio_since_silence": 4092,
+     "convai_tts_service_ttfb": 278
+    },
+    {
+     "convai_llm_service_ttfb": 3322,
+     "convai_ttf_audio_since_silence": 4092,
+     "convai_tts_service_ttfb": 278
+    }
+   ]
+  },
+  {
+   "conversation_id": "conv_2401kxzx09kvffaa15hjzf5vsp68",
+   "scenario": "deadend",
+   "tag": "finalD",
+   "agent_turns_client": 12,
+   "client_leak_turns": 0,
+   "server_leak_turns": 0,
+   "findings": [],
+   "order_ready_fired": false,
+   "metrics": [
+    {
+     "convai_ttf_audio_since_silence": 259,
+     "convai_tts_service_ttfb": 258
+    },
+    {
+     "convai_llm_service_ttfb": 2996,
+     "convai_ttf_audio_since_silence": 4253,
+     "convai_tts_service_ttfb": 356
+    },
+    {
+     "convai_llm_service_ttfb": 4353,
+     "convai_ttf_audio_since_silence": 5900,
+     "convai_tts_service_ttfb": 311
+    },
+    {
+     "convai_llm_service_ttfb": 3146,
+     "convai_ttf_audio_since_silence": 23607,
+     "convai_tts_service_ttfb": 293
+    },
+    {
+     "convai_llm_service_ttfb": 898,
+     "convai_ttf_audio_since_silence": 17555,
+     "convai_tts_service_ttfb": 266
+    },
+    {
+     "convai_llm_service_ttfb": 3014,
+     "convai_ttf_audio_since_silence": 3929,
+     "convai_tts_service_ttfb": 235
+    },
+    {
+     "convai_llm_service_ttfb": 1725,
+     "convai_ttf_audio_since_silence": 26892,
+     "convai_tts_service_ttfb": 312
+    },
+    {
+     "convai_llm_service_ttfb": 669,
+     "convai_ttf_audio_since_silence": 15639,
+     "convai_tts_service_ttfb": 325
+    },
+    {
+     "convai_llm_service_ttfb": 9355,
+     "convai_ttf_audio_since_silence": 9987,
+     "convai_tts_service_ttfb": 271
+    },
+    {
+     "convai_llm_service_ttfb": 9355,
+     "convai_ttf_audio_since_silence": 9987,
+     "convai_tts_service_ttfb": 271
+    }
+   ]
+  },
+  {
+   "conversation_id": "conv_0201kxzx57cffcpt1k94rmgy55db",
+   "scenario": "think",
+   "tag": "finalD",
+   "agent_turns_client": 13,
+   "client_leak_turns": 0,
+   "server_leak_turns": 0,
+   "findings": [],
+   "order_ready_fired": false,
+   "metrics": [
+    {
+     "convai_ttf_audio_since_silence": 249,
+     "convai_tts_service_ttfb": 246
+    },
+    {
+     "convai_llm_service_ttfb": 683
+    },
+    {
+     "convai_llm_service_ttfb": 473,
+     "convai_ttf_audio_since_silence": 2609,
+     "convai_tts_service_ttfb": 333
+    },
+    {
+     "convai_llm_service_ttfb": 1355,
+     "convai_ttf_audio_since_silence": 2147,
+     "convai_tts_service_ttfb": 275
+    },
+    {
+     "convai_llm_service_ttfb": 585,
+     "convai_ttf_audio_since_silence": 1509,
+     "convai_tts_service_ttfb": 352
+    },
+    {
+     "convai_llm_service_ttfb": 496,
+     "convai_ttf_audio_since_silence": 18656,
+     "convai_tts_service_ttfb": 270
+    },
+    {
+     "convai_llm_service_ttfb": 937,
+     "convai_ttf_audio_since_silence": 14859,
+     "convai_tts_service_ttfb": 275
+    },
+    {
+     "convai_llm_service_ttfb": 566,
+     "convai_ttf_audio_since_silence": 14050,
+     "convai_tts_service_ttfb": 328
+    },
+    {
+     "convai_llm_service_ttfb": 881,
+     "convai_ttf_audio_since_silence": 15538,
+     "convai_tts_service_ttfb": 324
+    },
+    {
+     "convai_llm_service_ttfb": 762
+    },
+    {
+     "convai_llm_service_ttfb": 584,
+     "convai_ttf_audio_since_silence": 2708,
+     "convai_tts_service_ttfb": 381
+    },
+    {
+     "convai_llm_service_ttfb": 1259,
+     "convai_ttf_audio_since_silence": 18466,
+     "convai_tts_service_ttfb": 271
+    },
+    {
+     "convai_llm_service_ttfb": 546,
+     "convai_ttf_audio_since_silence": 15673,
+     "convai_tts_service_ttfb": 282
+    },
+    {
+     "convai_llm_service_ttfb": 1631,
+     "convai_ttf_audio_since_silence": 2290,
+     "convai_tts_service_ttfb": 252
+    },
+    {
+     "convai_llm_service_ttfb": 1631,
+     "convai_ttf_audio_since_silence": 2290,
+     "convai_tts_service_ttfb": 252
+    }
+   ]
+  },
+  {
+   "conversation_id": "conv_2801kxzxamj6exa847sjbnm3ak0r",
+   "scenario": "interrupt",
+   "tag": "finalD",
+   "agent_turns_client": 8,
+   "client_leak_turns": 0,
+   "server_leak_turns": 0,
+   "findings": [],
+   "order_ready_fired": false,
+   "metrics": [
+    {
+     "convai_ttf_audio_since_silence": 287,
+     "convai_tts_service_ttfb": 286
+    },
+    {
+     "convai_llm_service_ttfb": 1095
+    },
+    {
+     "convai_llm_service_ttfb": 1174,
+     "convai_ttf_audio_since_silence": 3912,
+     "convai_tts_service_ttfb": 296
+    },
+    {
+     "convai_llm_service_ttfb": 629,
+     "convai_ttf_audio_since_silence": 1520,
+     "convai_tts_service_ttfb": 280
+    },
+    {
+     "convai_llm_service_ttfb": 741,
+     "convai_ttf_audio_since_silence": 21199,
+     "convai_tts_service_ttfb": 299
+    },
+    {
+     "convai_llm_service_ttfb": 735,
+     "convai_ttf_audio_since_silence": 13946,
+     "convai_tts_service_ttfb": 274
+    },
+    {
+     "convai_llm_service_ttfb": 1348,
+     "convai_ttf_audio_since_silence": 1998,
+     "convai_tts_service_ttfb": 326
+    },
+    {
+     "convai_llm_service_ttfb": 1348,
+     "convai_ttf_audio_since_silence": 1998,
+     "convai_tts_service_ttfb": 326
+    }
+   ]
+  },
+  {
+   "conversation_id": "conv_3101kxzxd8xregg9faqx40hbcpws",
+   "scenario": "marathon",
+   "tag": "finalD",
+   "agent_turns_client": 21,
+   "client_leak_turns": 0,
+   "server_leak_turns": 0,
+   "findings": [],
+   "order_ready_fired": false,
+   "metrics": [
+    {
+     "convai_ttf_audio_since_silence": 249,
+     "convai_tts_service_ttfb": 247
+    },
+    {
+     "convai_llm_service_ttfb": 768,
+     "convai_ttf_audio_since_silence": 1416,
+     "convai_tts_service_ttfb": 284
+    },
+    {
+     "convai_llm_service_ttfb": 612
+    },
+    {
+     "convai_llm_service_ttfb": 586,
+     "convai_ttf_audio_since_silence": 2453,
+     "convai_tts_service_ttfb": 225
+    },
+    {
+     "convai_llm_service_ttfb": 544,
+     "convai_ttf_audio_since_silence": 1137,
+     "convai_tts_service_ttfb": 250
+    },
+    {
+     "convai_llm_service_ttfb": 596,
+     "convai_ttf_audio_since_silence": 1732,
+     "convai_tts_service_ttfb": 311
+    },
+    {
+     "convai_llm_service_ttfb": 759,
+     "convai_ttf_audio_since_silence": 13586,
+     "convai_tts_service_ttfb": 279
+    },
+    {
+     "convai_llm_service_ttfb": 602,
+     "convai_ttf_audio_since_silence": 14675,
+     "convai_tts_service_ttfb": 250
+    },
+    {
+     "convai_llm_service_ttfb": 1603
+    },
+    {
+     "convai_llm_service_ttfb": 3141,
+     "convai_ttf_audio_since_silence": 5839,
+     "convai_tts_service_ttfb": 262
+    },
+    {
+     "convai_llm_service_ttfb": 648,
+     "convai_ttf_audio_since_silence": 21966,
+     "convai_tts_service_ttfb": 306
+    },
+    {
+     "convai_llm_service_ttfb": 581,
+     "convai_ttf_audio_since_silence": 17143,
+     "convai_tts_service_ttfb": 314
+    },
+    {
+     "convai_llm_service_ttfb": 739,
+     "convai_ttf_audio_since_silence": 1409,
+     "convai_tts_service_ttfb": 258
+    },
+    {
+     "convai_llm_service_ttfb": 554,
+     "convai_ttf_audio_since_silence": 19656,
+     "convai_tts_service_ttfb": 231
+    },
+    {
+     "convai_llm_service_ttfb": 682,
+     "convai_ttf_audio_since_silence": 15924,
+     "convai_tts_service_ttfb": 275
+    },
+    {
+     "convai_llm_service_ttfb": 646,
+     "convai_ttf_audio_since_silence": 1306,
+     "convai_tts_service_ttfb": 314
+    },
+    {
+     "convai_llm_service_ttfb": 560,
+     "convai_ttf_audio_since_silence": 16157,
+     "convai_tts_service_ttfb": 240
+    },
+    {
+     "convai_llm_service_ttfb": 575,
+     "convai_ttf_audio_since_silence": 15907,
+     "convai_tts_service_ttfb": 316
+    },
+    {
+     "convai_llm_service_ttfb": 1157,
+     "convai_ttf_audio_since_silence": 1741,
+     "convai_tts_service_ttfb": 233
+    },
+    {
+     "convai_llm_service_ttfb": 1157,
+     "convai_ttf_audio_since_silence": 1741,
+     "convai_tts_service_ttfb": 233
+    }
+   ]
+  }
+ ]
+}
