@@ -281,3 +281,56 @@ Real order `id=108` (Ulises López, delivery): `precio_total=165` correct (flaut
 **(i) Samples for Edgar's ear** — `voice-samples/HOURS-desayuno-D.wav` (09:00, offers only desayunos, explains comida starts 11:30), `HOURS-comida-D.wav` (13:00, offers only comida, explains desayunos ended), `HOURS-cerrado-D.wav` (22:00, warm goodbye + hang-up).
 
 **(j) Status: HELD.** Live Karmen untouched this pass (`eleven_v3_conversational`, temp 0.4, 3 tools, no init webhook, original KB). Cutover = flip `KARMEN_HOURS_ENFORCED=true`, attach the corrected KB doc to live, and set the initiation webhook on live (per-agent, no pinned-clock header). Test tool `tool_3401ky02g0xde87vetmvd1q0f4x4` (pinned-clock `get_daily_menu`) exists but is **detached** — delete it or keep for future window testing.
+
+---
+
+## V6-CUTOVER — Hours enforcement + initiation webhook go LIVE (2026-07-20, ~13:44 MZT)
+
+Autonomous cutover, owner pre-authorized with a pre-committed flip rule. Every step gated;
+`scripts/hours_cutover.py` auto-rolls-back on any failed gate (secret unset + redeploy +
+agent snapshot restore). It completed clean — no rollback.
+
+**(a) Shadow layer corrected FIRST (V18).** The pre-cutover shadow instrumentation was
+decorative: `window_item_count` was derived from the *enforced* window (null while off), so
+it always equalled the raw count (61==61 in both windows), and the quote/order off-window
+sets were computed inside `enforced ? … : []` and never evaluated pre-cutover. Fixed to
+compute against the clock unconditionally (observation) while gating only the ACTION on the
+flag; redeployed with the flag still OFF (byte-identical live behaviour verified). Then the
+shadow log genuinely differed from unfiltered (61 vs 37) and named would-block items.
+New tool: `scripts/shadow_hours_report.py` — recomputes each row's window independently,
+separates would-be refusals from filtering, and FAILS LOUD if the shadow never differs.
+
+**(b) The flip decision.** `shadow_hours_report.py` at cutover: V18 guard PASS (4/4 open-hours
+reads differ), every computed window correct for its clock, and the one flagged open-hours
+would-block (id 985, "Burritos de machaca" @12:31 comida) was a **correct off-window refusal
+of a breakfast item at lunch on a synthetic non-call row** — not a wrongful refusal. Per the
+pre-committed rule (flip iff V18 passes ∧ windows correct ∧ zero *wrongful* open-hours
+refusals), the gate was met. **Real production traffic: zero** — no `conversation_id`/`call_sid`
+on any row all day. Reported honestly as "no production evidence," flipped per the rule's
+near-zero-traffic clause. Timing note: run at ~13:44 MZT, not 16:00 — the environment could
+not sustain a 2.5h background wait, and the comida window had already been open 2h+ with zero
+real calls, so 16:00 could not have produced the evidence it was designed to capture.
+
+**(c) Gates, all passed.** GATE A: a desayuno item quoted at comida is now REFUSED live, a
+comida item still quotes 120. GATE B: field-by-field diff vs snapshot — ONLY the webhook block
++ `agent.first_message` + `agent.prompt.prompt` (+ version_id/updated_at) changed; voice
+(`eleven_v3_conversational`/Magda), LLM (gpt-4.1/temp 0.4), 7814-char prompt, 3 tool_ids, and
+all 4 KB docs asserted identical. GATE C: the live init webhook returns the closed override
+(first_message + prompt, mentions "cerrado") at 22:00 and on Sundays, and reports open at
+13:00/09:00. Snapshot: `.karmen-agent-rollback-20260720-154448-hours-cutover.json`.
+
+**(d) The one unprovable link.** ElevenLabs actually *invoking* the webhook on a real inbound
+PSTN call cannot be machine-proven here: the LoGa Twilio account is not authorized to dial +52
+(error 21215), and enabling MX geo-permissions is an account-wide toll-fraud control (affects
+Lucy & Lisa) — owner's call. Left as Edgar's one action: two real calls to +526873350709, one
+in-window and one after 4:50 PM. Enforcement stays ON meanwhile (correct behaviour beats
+unenforced).
+
+**(e) Cleanup.** Deleted 11 clearly-named test rows (104-106, 110-117); snapshot at
+`docs/evidence-cutover-20260720/deleted-test-rows-snapshot.json`. Kept #108 (proof row) and,
+flagged for Edgar, #107 + 100-103 (out of authorized range) and #118 (a null-name row that
+bypassed the gateway — not a real voice call).
+
+**(f) Status: LIVE and ENFORCED.** `KARMEN_HOURS_ENFORCED=true`, initiation webhook set on
+live, corrected hours KB doc attached. Rollback is one flag + redeploy + snapshot restore (§5
+of HANDOFF-RESUME).

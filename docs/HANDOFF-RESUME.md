@@ -33,7 +33,9 @@ is a map, not the territory.
 - Prompt: warm-v3 (`docs/agent-prompts/karmen-system-prompt-warm-v3.txt`, 7814 chars)
 - Tools (3): `tool_9801…` `get_daily_menu` · `tool_8501…` `compute_total` · `tool_0901…` `submit_order` (**sends `style:"warm"`** → rotating name-aware farewell)
 - KB (4 docs): Extras · Bebidas · **`xpNJs3xDhFwI8Ymv436i` "Información (horarios corregidos)" — CORRECTED HOURS, pushed live 2026-07-20, see §4** · Menú de Desayunos
-- `conversation_initiation_client_data_webhook`: **null** (not yet wired live)
+- `conversation_initiation_client_data_webhook`: **SET** (2026-07-20) → `…/karmen-gateway`,
+  headers `Authorization: Bearer <anon>` + `x-karmen-secret`, no now-override. Overrides
+  `agent.first_message` + `agent.prompt.prompt` enabled. `KARMEN_HOURS_ENFORCED=true`.
 
 ### Detached / historical ids (do not re-attach without reason)
 `tool_1301…` old plain `submit_order` · `tool_2201…` redundant client `end_call` ·
@@ -63,7 +65,7 @@ Guardrails re-proven at temp 0.4: sims ALL PASS ×2, leak battery 61 turns / 0 l
 > different model, **not** a plan gate. Our tier is **Creator ($22/mo)** and it is
 > sufficient. Do not tell the owner he needs an upgrade.
 
-### V6 — business hours + service windows: **BUILT, PROVEN, HELD** ⏸️
+### V6 — business hours + service windows: **LIVE and ENFORCED** ✅ (cut over 2026-07-20 ~13:44 MZT)
 Rules (America/Mazatlan, no DST): open **7:50 AM–4:50 PM**; closed 4:50 PM–7:50 AM;
 **Sundays closed all day**; **7:50–11:30 = desayunos only**; **11:31–4:50 = comidas only**.
 Bebidas + extras stay available in BOTH windows (the free-tea promo is a `bebida`).
@@ -71,51 +73,58 @@ Bebidas + extras stay available in BOTH windows (the free-tea promo is a `bebida
 - Enforced **in code** in `karmen-gateway`: window-filtered menu, closed short-circuit
   with a server-dictated warm message, and server-side refusal of `compute_total` /
   `submit_order` when closed or off-window (off-window returns **no total at all**).
-- **Behind a default-off flag: `KARMEN_HOURS_ENFORCED` (currently `false`/unset).**
-  The gateway is SHARED by live and duplicate, so this flag is the only thing keeping
-  the deploy from changing live behavior. Unenforced requests still LOG
-  `window: shadow:<window>` for pre-cutover observability.
-- **47/47 boundary assertions pass** (`scripts/hours_boundary_battery.py`).
+- **`KARMEN_HOURS_ENFORCED=true`** (flipped 2026-07-20, gateway redeployed to pick it up
+  — the flag is read at module load). The gateway is SHARED by live and duplicate; the
+  flag was default-off through the whole build precisely so the deploy couldn't change
+  live. Cutover was run by `scripts/hours_cutover.py` with auto-rollback on any failed
+  gate; all three gates passed (tool-path enforcement live, field-diff clean, webhook
+  open/closed correct). Snapshot: `.karmen-agent-rollback-20260720-154448-hours-cutover.json`.
+- **Conversation-initiation webhook is now SET on live** — url `…/karmen-gateway`, headers
+  `Authorization: Bearer <anon>` + `x-karmen-secret` (NO now-override on live), and the
+  two overrides `agent.first_message` + `agent.prompt.prompt` enabled. So a closed-time
+  caller gets a server-dictated closed greeting + a prompt that forbids menu/order/transfer.
+- **47/47 boundary assertions pass** (`scripts/hours_boundary_battery.py`); the shadow
+  layer was corrected (V18) and re-proven before flipping (`scripts/shadow_hours_report.py`).
 - **K15 gap closed:** hours are also injected at **conversation initiation** (see §4),
   because a caller can ask "¿están abiertos?" without firing any tool.
 
+> **The ONE link not machine-provable:** that ElevenLabs actually *invokes* the initiation
+> webhook on a real inbound PSTN call. The gateway half is fully proven (it returns the
+> closed override at closed times — verified live). A WebSocket harness sends its own
+> initiation data, so only a real phone call closes this. **This is Edgar's one action — see §3.**
+
 ---
 
-## 3. What to do next (the cutover, in order)
+## 3. What's left — Edgar's ONE action (everything else is DONE)
 
-Each step is owner-gated. Do not run these without Edgar's go.
+The cutover (enforcement flag + initiation webhook + corrected KB doc) is **complete and
+self-verified on live** as of 2026-07-20. The only thing engineering cannot do is
+originate a real inbound PSTN call: the LoGa Twilio account is **not authorized to dial
++52 Mexico** (error 21215), and enabling MX geo-permissions is an account-wide
+toll-fraud/financial control that also affects Lucy & Lisa — owner's call, not automatable.
 
+### Edgar: call **+526873350709** from your phone, TWICE — this is the definition of done
+1. **During open hours (before 4:50 PM, not Sunday)** — confirm she offers only the
+   CURRENT window's mains (comida after 11:31 / desayunos before 11:30), still offers the
+   free té Jazmín on pickup, and an order lands with the correct total.
+2. **After 4:50 PM (or any Sunday)** — confirm she opens with the closed message, states
+   the real hours (7:50–4:50), **refuses to take an order, does not transfer**, and hangs up.
+
+> **Call #2 is the whole point.** It is the ONLY way to prove the one link still
+> unproven: that ElevenLabs actually invokes the initiation webhook on a real inbound
+> phone call. The gateway half IS proven (it returns the closed override at 22:00 and on
+> Sundays — verified live 2026-07-20). WebSocket harnesses send their own initiation data,
+> so they structurally cannot prove the platform's invocation. Until call #2, the closed
+> path is *implemented and gateway-proven*, **not** end-to-end proven.
+
+Verify both calls from telemetry + DB, not the transcript alone:
 ```bash
-# 0) Snapshot live FIRST, always.
-curl -s -H "xi-api-key: $(cat .el_key)" \
-  "https://api.elevenlabs.io/v1/convai/agents/agent_9901k5y1nqype69akbe3j8swwwat" \
-  -o ".karmen-agent-rollback-$(date +%Y%m%d-%H%M%S)-hours-cutover.json"
-
-# 1) Turn hours enforcement ON.
-supabase secrets set KARMEN_HOURS_ENFORCED=true --project-ref edcjcehfedwxxucktxoj
-
-# 2) [DONE 2026-07-20 — already on live, see §4] Corrected hours KB doc attached.
-#    Nothing to do here. Left in place so the cutover sequence stays readable.
-
-# 3) Set the conversation-initiation webhook on LIVE (per-agent — verified NOT workspace-wide).
-#    url = https://edcjcehfedwxxucktxoj.supabase.co/functions/v1/karmen-gateway
-#    headers = Authorization: Bearer <anon key>, x-karmen-secret: <read secret>
-#    *** NO x-karmen-now-override header on live *** (that pinned clock is test-only).
-#    Also enable platform_settings.overrides.conversation_config_override.agent.first_message = true
-#    and .prompt.prompt = true, or the closed-state override cannot apply.
+# a real PSTN call carries a call_sid; a test-chat/simulate does not
+select id,event_type,call_sid,payload->>'window',created_at at time zone 'America/Mazatlan'
+  from voice_events where call_sid is not null order by id desc limit 20;
+# the open-hours order row (correct total, correct window items)
+select id,cliente_nombre,modalidad,precio_total,fecha from ordenes_agente_voz order by id desc limit 5;
 ```
-
-### 4) Then Edgar places **TWO real calls** — this is the definition of done
-1. **During open hours** — confirm normal ordering still works end to end and the
-   correct window's menu is offered.
-2. **After 4:50 PM (or on a Sunday)** — confirm she opens with the closed message,
-   states the real hours, refuses to take an order, **does not transfer**, and hangs up.
-
-> **Call #2 is not optional.** It is the ONLY way to prove the one link still
-> unproven: that ElevenLabs actually invokes the initiation webhook on a real
-> inbound phone call. WebSocket test harnesses send their own initiation data, so
-> they structurally cannot prove it (confirmed from telemetry). Until call #2, the
-> closed path is *implemented and payload-proven*, **not** end-to-end proven.
 
 ---
 
@@ -155,7 +164,8 @@ real hours, payment rules, the $20 delivery fee, and the promotions.
 | Change | Rollback |
 |---|---|
 | **Warm/D voice cutover (Stage B)** | `./scripts/rollback-warm-cutover.sh` — restores prompt, temperature, first_message, tool_ids, tts model/expressive, speculative_turn from `.karmen-agent-rollback-20260720-092953-warm-cutover.json` |
-| **Hours enforcement** | `supabase secrets unset KARMEN_HOURS_ENFORCED --project-ref edcjcehfedwxxucktxoj` (instantly returns live to unenforced/shadow) |
+| **Hours enforcement** (now ON) | `supabase secrets unset KARMEN_HOURS_ENFORCED --project-ref edcjcehfedwxxucktxoj && supabase functions deploy karmen-gateway --project-ref edcjcehfedwxxucktxoj` (the flag is read at module load, so the redeploy is required to actually revert) |
+| **Initiation webhook + overrides** (now SET) | Restore `platform_settings.overrides` + `workspace_overrides` from `.karmen-agent-rollback-20260720-154448-hours-cutover.json` (sets the webhook back to null and the two override booleans back to false). `scripts/hours_cutover.py` does this automatically on any failed gate. |
 | **Corrected KB doc** (applied 2026-07-20) | PATCH `knowledge_base[2]` back to `{"type":"file","name":"Untitled document-2.docx","id":"DUinhY6brFXOlQlVNyKI","usage_mode":"auto"}` — the original was detached, never deleted. Full pre-state: `.karmen-agent-rollback-20260720-131106-pre-kbdoc.json` |
 | **Initiation webhook** | PATCH `platform_settings.workspace_overrides.conversation_initiation_client_data_webhook = null` |
 | **Any agent change** | Every snapshot is `.karmen-agent-rollback-<ts>-<label>.json` in the repo root — PATCH the fields back |
@@ -164,7 +174,8 @@ real hours, payment rules, the $20 delivery fee, and the promotions.
 
 ## 6. Open owner decisions (engineering has no say)
 
-1. **Hours cutover** — flip the flag + KB + webhook, then the two real calls (§3).
+1. ~~**Hours cutover**~~ — **DONE 2026-07-20** (flag + webhook + KB all live, self-verified).
+   Remaining: Edgar's two real calls (§3), the only end-to-end proof of webhook invocation.
 2. ~~**Corrected hours KB to live NOW?**~~ — **RESOLVED 2026-07-20**: authorized and
    applied standalone. See §4. (Live now states the correct hours and the Sunday closure.)
 3. **Failure-alert bot** — `KARMEN_ALERT_BOT_TOKEN` / `KARMEN_ALERT_CHAT_ID` are still
@@ -172,14 +183,29 @@ real hours, payment rules, the $20 delivery fee, and the promotions.
    is durably logged to `voice_events` but **no human is pinged**. Accepted fast-follow,
    not an oversight — the gateway reports `alert_credential_missing` honestly rather
    than faking success.
-4. **Test rows in `ordenes_agente_voz`** — ids **104–106** (`STAGE-A-TEST-PROOF` / test
-   phones) and **#115** (the FINAL-D sample call: Ulises López, flautas, $120 pickup,
-   which also sent a **real kitchen Telegram ticket**). Order data is never deleted
-   without an explicit ask. **Tell the kitchen #115 was a test.**
-5. **Muletillas** ("órale/sale/va") — in and live; Edgar's ear decides if they stay.
-6. **n8n kitchen Telegram credential** — the Stage-A notify node feeds the same
+4. ~~**Test rows in `ordenes_agente_voz`**~~ — **CLEANED 2026-07-20** (owner-authorized).
+   Deleted ids **104, 105, 106, 110–117** (11 rows: STAGE-A-TEST-PROOF, Juan Pérez ×4,
+   Ulises López ×4, Unisys Locos, Denise). Full pre-delete snapshot at
+   `docs/evidence-cutover-20260720/deleted-test-rows-snapshot.json` (re-insertable).
+   **Kept, flagged for Edgar:** #108 (the documented Stage-A proof row); #107
+   (`PRUEBA FINAL SISTEMA` — a test but outside the authorized range, not deleted);
+   ids 100–103 (older null-name partials). **Say the word to delete 107 and 100–103 too.**
+5. ⚠️ **Row #118 — anomaly, left in place.** Appeared 13:32 MZT 2026-07-20: Lomo Mechado,
+   $145, but **null name/phone/modalidad** and **no submit_order telemetry**. The live
+   gateway's `submit_order` rejects null name/phone/modalidad (K5), so #118 **did not come
+   through the voice gateway** — it was written by some other path (direct insert, WhatsApp
+   agent, or a dashboard test). Provenance uncertain, so I did **not** delete it. Edgar:
+   confirm what wrote it; if a test, remove it. (It carries no `call_sid`/`conversation_id`,
+   so it is **not** evidence of a real inbound voice call.)
+6. **Muletillas** ("órale/sale/va") — in and live; Edgar's ear decides if they stay.
+7. **n8n kitchen Telegram credential** — the Stage-A notify node feeds the same
    already-credentialed `Response` node the real orders always used (no new credential
    was trusted). Confirm this stays the intended path.
+8. 🔐 **Twilio auth token exposed — rotate.** Proving call-origination required listing the
+   Twilio account via the n8n `LoGa Number` credential; Twilio's `Accounts.json` returns
+   `auth_token` in plaintext, now sitting in n8n execution logs (execs 69967 and the
+   archived TEMP workflows). No call was placed (MX dialing is not authorized — error
+   21215). Recommend rotating `TWILIO_AUTH_TOKEN` and clearing those execution logs.
 
 ---
 
@@ -234,7 +260,7 @@ supabase functions deploy karmen-gateway --project-ref edcjcehfedwxxucktxoj
 ## 9. Where the history lives
 
 - `docs/stage-recaps.md` — one recap per stage, appended never rewritten, with real numbers.
-- `docs/bug-ledger.md` — **K1–K15**, each with symptom → root cause → fix → prevention rule.
+- `docs/bug-ledger.md` — **K1–K16**, each with symptom → root cause → fix → prevention rule.
 - `docs/stage-A-order-integrity-design.md` — the Stage A design + review record.
 - `docs/evidence-latency-battery-20260720/` — raw voice-model latency evidence.
 - `voice-samples/` — `FINAL-D-karmen-calida.wav` (full real order on the live config),
