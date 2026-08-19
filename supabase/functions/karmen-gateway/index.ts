@@ -289,6 +289,7 @@ interface MenuItem {
   name: string;
   price: number;
   sides?: string;
+  photo_url?: string; // present only on include_photos:true requests
 }
 interface MenuPayload {
   menu: Record<Category, MenuItem[]>;
@@ -362,6 +363,41 @@ async function loadMenu(serviceDate: string): Promise<{ value: MenuPayload; cach
   }
   menuCache.set(serviceDate, { value, expires: now + MENU_CACHE_MS });
   return { value, cacheHit: false };
+}
+
+// Dish photos for the ordering site. The photo lives with the DISH
+// (menu_catalog.photo_path, a storage path in the PUBLIC "platos" bucket),
+// never with the day — daily_menu rows join to it here by normalized
+// (category, item_name). Served ONLY when the request carries
+// include_photos:true: the ElevenLabs tool configs never send it, so Karmen's
+// tool payload stays byte-identical (URLs would only burn tokens in a voice
+// context). Additive — the flagless response shape is untouched.
+const PHOTO_BUCKET = "platos";
+// Photos change far less often than availability; a longer TTL than the menu's
+// is fine, and a fresh upload still shows within minutes.
+const PHOTO_CACHE_MS = 5 * 60_000;
+let photoCache: { map: Map<string, string>; expires: number } | null = null;
+
+async function loadPhotoMap(): Promise<Map<string, string>> {
+  if (photoCache && Date.now() < photoCache.expires) return photoCache.map;
+  const { data, error } = await supabase
+    .from("menu_catalog")
+    .select("category,item_name,photo_path")
+    .not("photo_path", "is", null);
+  if (error) throw error;
+  const map = new Map<string, string>();
+  for (const r of (data ?? []) as any[]) {
+    const path = String(r.photo_path ?? "").trim();
+    if (path) map.set(`${r.category}|${normalizeName(String(r.item_name))}`, path);
+  }
+  photoCache = { map, expires: Date.now() + PHOTO_CACHE_MS };
+  return map;
+}
+
+function photoUrlFor(map: Map<string, string>, cat: Category, name: string): string | undefined {
+  const path = map.get(`${cat}|${normalizeName(name)}`);
+  if (!path) return undefined;
+  return `${SUPABASE_URL}/storage/v1/object/public/${PHOTO_BUCKET}/${encodeURIComponent(path)}`;
 }
 
 // Order-item name matching is normalized so a name the model read back from
@@ -793,6 +829,24 @@ serve(async (req) => {
       const windowMenu: Record<Category, MenuItem[]> = { desayuno: [], comida: [], bebida: [], extra: [] };
       for (const c of CATEGORIES) {
         if (allowed.includes(c)) windowMenu[c] = value.menu[c];
+      }
+
+      // Photos are decoration: opt-in only (see loadPhotoMap), and a failed
+      // catalog read must never take the menu down with it — degrade to the
+      // photo-less menu and log the failure distinctly. Items are re-created
+      // (not mutated) so photo_url never leaks into the shared menu cache.
+      if (body?.include_photos === true) {
+        try {
+          const photoMap = await loadPhotoMap();
+          for (const c of CATEGORIES) {
+            windowMenu[c] = windowMenu[c].map((it) => {
+              const photo_url = photoUrlFor(photoMap, c, it.name);
+              return photo_url ? { ...it, photo_url } : it;
+            });
+          }
+        } catch (err: any) {
+          logInBackground(call_sid, "photo_map_error", { error: String(err?.message ?? err) });
+        }
       }
       const windowItemCount = allowed.reduce((n, c) => n + windowMenu[c].length, 0);
       const windowEmpty = windowItemCount === 0;
