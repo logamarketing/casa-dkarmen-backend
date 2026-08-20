@@ -117,6 +117,46 @@ function parsePrice(raw: unknown): number | null {
   return n;
 }
 
+// ---- DISH PHOTOS (additive, read-only) --------------------------------------
+// Same source of truth as the gateway/ordering site: menu_catalog.photo_path,
+// a filename in the PUBLIC "platos" bucket. list_catalog reads the column
+// directly; list_day joins by normalized (category, item_name) — identical
+// matching to the gateway so the admin and the site always show the same
+// photo for the same dish. Decoration is fail-soft: a photo lookup failure
+// degrades to the exact pre-photo response, never breaks the action.
+const PHOTO_BUCKET = "platos";
+
+function photoUrl(path: unknown): string | null {
+  const p = String(path ?? "").trim();
+  if (!p) return null;
+  return `${SUPABASE_URL}/storage/v1/object/public/${PHOTO_BUCKET}/${encodeURIComponent(p)}`;
+}
+
+// Same normalization the gateway uses for its photo join — case, accents,
+// and whitespace never break the match.
+function normalizeName(s: string): string {
+  return String(s)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function loadPhotoMap(): Promise<Map<string, string>> {
+  const { data, error } = await supabase
+    .from("menu_catalog")
+    .select("category,item_name,photo_path")
+    .not("photo_path", "is", null);
+  if (error) throw error;
+  const map = new Map<string, string>();
+  for (const r of (data ?? []) as any[]) {
+    const path = String(r.photo_path ?? "").trim();
+    if (path) map.set(`${r.category}|${normalizeName(String(r.item_name))}`, path);
+  }
+  return map;
+}
+
 // ---- ACTIONS ---------------------------------------------------------------
 
 // list_day: ALL rows for a day, INCLUDING is_available=false (unlike the gateway,
@@ -132,7 +172,7 @@ async function listDay(body: any) {
     .eq("service_date", r.date);
   if (error) throw error;
 
-  const rows = (Array.isArray(data) ? data : []).map((x: any) => ({
+  const rows: any[] = (Array.isArray(data) ? data : []).map((x: any) => ({
     id: x.id,
     category: x.category as Category,
     item_name: x.item_name,
@@ -149,6 +189,21 @@ async function listDay(body: any) {
     return String(a.item_name).localeCompare(String(b.item_name), "es");
   });
 
+  // Photo decoration — fail-soft: on any lookup error, return the exact
+  // pre-photo response and log the failure distinctly.
+  try {
+    const photoMap = await loadPhotoMap();
+    for (const row of rows) {
+      const path = photoMap.get(`${row.category}|${normalizeName(row.item_name)}`);
+      if (path) {
+        row.photo_path = path;
+        row.photo_url = photoUrl(path);
+      }
+    }
+  } catch (err: any) {
+    logInBackground("menu_admin_photo_map_error", { error: String(err?.message ?? err) });
+  }
+
   return json({
     ok: true,
     service_date: r.date,
@@ -163,7 +218,7 @@ async function listDay(body: any) {
 async function listCatalog() {
   const { data, error } = await supabase
     .from("menu_catalog")
-    .select("id,category,item_name,default_price,default_sides,sort_hint,is_active")
+    .select("id,category,item_name,default_price,default_sides,sort_hint,is_active,photo_path")
     .eq("is_active", true);
   if (error) throw error;
 
@@ -174,6 +229,9 @@ async function listCatalog() {
     default_price: Number(x.default_price),
     default_sides: x.default_sides ?? null,
     sort_hint: x.sort_hint,
+    // Additive: null for dishes without a photo — existing clients ignore it.
+    photo_path: String(x.photo_path ?? "").trim() || null,
+    photo_url: photoUrl(x.photo_path),
   }));
   rows.sort((a, b) => {
     if (a.category !== b.category) return CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category);
@@ -247,7 +305,21 @@ async function upsertItem(body: any) {
   }
 
   logInBackground("menu_admin_upsert_item", { service_date: r.date, category, item_name, price });
-  return json({ ok: true, item: { ...data, price: Number((data as any).price) } });
+
+  // Same fail-soft photo decoration as list_day, so an optimistic UI that
+  // swaps in this response never loses a thumbnail it already had.
+  const item: any = { ...data, price: Number((data as any).price) };
+  try {
+    const photoMap = await loadPhotoMap();
+    const path = photoMap.get(`${category}|${normalizeName(item_name)}`);
+    if (path) {
+      item.photo_path = path;
+      item.photo_url = photoUrl(path);
+    }
+  } catch (err: any) {
+    logInBackground("menu_admin_photo_map_error", { error: String(err?.message ?? err) });
+  }
+  return json({ ok: true, item });
 }
 
 // set_available: the sold-out toggle. Today/future only (a served day is history).
