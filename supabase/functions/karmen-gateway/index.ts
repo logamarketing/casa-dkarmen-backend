@@ -243,6 +243,87 @@ function logInBackground(
   }
 }
 
+// ---------------------------------------------------------------------------
+// VISIT ATTRIBUTION (website telemetry).
+//
+// The ordering site is the only caller that sends these. Before them, the sole
+// record of a web visitor was the menu fetch, which could not say where they
+// came from or whether four loads in a minute were four people or one.
+//
+// ABSENT stays ABSENT. Karmen's own tool calls send neither field, so their
+// `voice_events` rows keep the exact shape they have always had — these helpers
+// return null for a missing field and the caller omits the key entirely. A
+// field that is PRESENT but malformed is a different answer and is recorded as
+// "invalid": a rejected source must never be silently indistinguishable from
+// "no source", nor be quietly merged into a real bucket by truncation.
+const SRC_RE = /^[a-z0-9_-]{1,32}$/;
+const INVALID = "invalid";
+
+function sanitizeSrc(raw: unknown): string | null {
+  if (raw === undefined || raw === null) return null;
+  if (typeof raw !== "string") return INVALID;
+  const v = raw.trim().toLowerCase();
+  return SRC_RE.test(v) ? v : INVALID;
+}
+
+// The site generates a crypto.randomUUID(). Validating the SHAPE (rather than
+// storing whatever arrives) keeps an unbounded browser-supplied string out of
+// the payload while still letting a genuinely odd one be seen as "invalid".
+const VISIT_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+function sanitizeVisitId(raw: unknown): string | null {
+  if (raw === undefined || raw === null) return null;
+  if (typeof raw !== "string") return INVALID;
+  const v = raw.trim().toLowerCase();
+  return VISIT_ID_RE.test(v) ? v : INVALID;
+}
+
+// Spread into a telemetry payload. Never overwrites an existing key and never
+// adds one that was not sent, so every pre-existing field survives untouched.
+function visitFields(body: any): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  const src = sanitizeSrc(body?.src);
+  if (src !== null) out.src = src;
+  const visit_id = sanitizeVisitId(body?.visit_id);
+  if (visit_id !== null) out.visit_id = visit_id;
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// SITE FUNNEL EVENTS (log_event).
+//
+// compute_total / submit_order / conversation_init all stopped on 2026-07-20
+// when the ordering path moved to the n8n webhook. Orders still save; only the
+// logging died, so cart-abandonment became invisible. These four events put the
+// funnel back WITHOUT moving the order write, which stays frozen on n8n.
+//
+// The whitelist is exact and lives in code: voice_events has no CHECK on
+// event_type, so an open endpoint would let the browser mint arbitrary event
+// types and quietly corrupt every report that groups by it.
+const SITE_EVENTS = [
+  "cart_item_added",
+  "checkout_opened",
+  "order_submitted",
+  "order_failed",
+] as const;
+
+// `data` is browser-supplied. Bounded on purpose: a plain JSON object, small
+// enough that telemetry can never become a write-amplification lever. A
+// rejected blob is recorded as data_dropped rather than dropped silently.
+const MAX_DATA_BYTES = 2_000;
+
+function sanitizeEventData(raw: unknown): { data: Record<string, unknown> } | { data_dropped: true } {
+  if (raw === undefined || raw === null) return { data: {} };
+  if (typeof raw !== "object" || Array.isArray(raw)) return { data_dropped: true };
+  try {
+    const encoded = JSON.stringify(raw);
+    if (typeof encoded !== "string" || encoded.length > MAX_DATA_BYTES) return { data_dropped: true };
+    return { data: JSON.parse(encoded) as Record<string, unknown> };
+  } catch {
+    return { data_dropped: true };
+  }
+}
+
 // Two-secret rotation, fail-closed: if neither env secret is set, nothing can
 // match, so every request is refused. Remove the legacy branch after the
 // ElevenLabs tool is cut to the new secret and the old env var is deleted.
@@ -794,12 +875,17 @@ serve(async (req) => {
       // caller gets one warm, server-dictated line instead of a menu (V6).
       const win = enforcedWindow(now);
       if (win === "closed") {
+        // The site short-circuits to its own closed page and normally never
+        // reaches here — but it CAN: a visitor who loads at 16:49:59 passes the
+        // page's clock check and arrives after the gateway's. Attributing that
+        // visit matters exactly as much as attributing an open one.
         logInBackground(call_sid, "get_daily_menu", {
           service_date: serviceDate,
           closed: true,
           local_time: now.hhmm,
           weekday: now.weekday,
           time_overridden: now.overridden,
+          ...visitFields(body),
         });
         return json({
           ok: true,
@@ -882,6 +968,9 @@ serve(async (req) => {
         dropped: value.dropped,
         cache_hit: cacheHit,
         ms,
+        // Additive and last: every field above is untouched, and both keys are
+        // absent entirely on Karmen's voice calls, which send neither.
+        ...visitFields(body),
       });
 
       const res: Record<string, unknown> = {
@@ -921,6 +1010,45 @@ serve(async (req) => {
       }
 
       return json(res);
+    }
+
+    // -------------------------------------------------------------------
+    // log_event — the website funnel. Telemetry only: it reads nothing, writes
+    // nothing but a voice_events row, and touches no order, menu or hours path.
+    //
+    // Auth is the READ secret, enforced by the per-action gate above. That is
+    // deliberate and is NOT a widening: the read secret already ships in the
+    // public browser bundle, so this endpoint grants exactly what a visitor can
+    // already do. Order injection stays behind KARMEN_ORDER_SECRET, which the
+    // browser never sees. The whitelist below is what bounds the blast radius
+    // to "someone can write junk rows of four known types".
+    if (action === "log_event") {
+      const rawType = typeof body?.event_type === "string" ? body.event_type.trim() : "";
+      if (!(SITE_EVENTS as readonly string[]).includes(rawType)) {
+        // 400, not a silent drop: the site is fire-and-forget so nothing breaks,
+        // but a typo'd or hostile event type must be visibly refused rather than
+        // absorbed into a table that has no CHECK constraint of its own.
+        return json(
+          { ok: false, error: `Unsupported event_type (expected one of: ${SITE_EVENTS.join(", ")})` },
+          400,
+        );
+      }
+
+      const payload: Record<string, unknown> = {
+        ...visitFields(body),
+        ...sanitizeEventData(body?.data),
+      };
+
+      // Awaited, and the real error is returned. Unlike the voice hot path
+      // there is no caller waiting in silence here, and an `ok:true` that wrote
+      // nothing is the one answer a telemetry endpoint must never give.
+      const { error } = await supabase
+        .from("voice_events")
+        .insert({ call_sid, event_type: rawType, payload });
+      if (error) {
+        return json({ ok: false, error: "log_failed" }, 500);
+      }
+      return json({ ok: true, event_type: rawType });
     }
 
     if (action === "compute_total") {
