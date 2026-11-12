@@ -305,6 +305,10 @@ const SITE_EVENTS = [
   "checkout_opened",
   "order_submitted",
   "order_failed",
+  // 2026-11-12: checkout-button telemetry from the ordering site (c3eb891).
+  "submit_clicked",
+  "submit_blocked",
+  "fulfillment_abandoned",
 ] as const;
 
 // `data` is browser-supplied. Bounded on purpose: a plain JSON object, small
