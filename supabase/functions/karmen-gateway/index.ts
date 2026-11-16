@@ -302,6 +302,7 @@ function visitFields(body: any): Record<string, unknown> {
 // types and quietly corrupt every report that groups by it.
 const SITE_EVENTS = [
   "cart_item_added",
+  "cart_item_removed", // 2026-11-15: cart-shrink telemetry from the ordering site.
   "checkout_opened",
   "order_submitted",
   "order_failed",
