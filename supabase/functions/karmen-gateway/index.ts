@@ -161,8 +161,11 @@ function resolveNow(override: string): LocalNow | null {
   };
 }
 
-function serviceWindow(now: LocalNow): ServiceWindow {
-  if (now.weekday === 0) return "closed"; // Sundays: closed all day
+// `closedDay` comes from isClosedDay() — the database's karmen_dia_cerrado
+// (Sundays AND one-off dates in public.dias_cerrados). The gateway no longer
+// checks the weekday itself: one rule, in one place (2026-11-16).
+function serviceWindow(now: LocalNow, closedDay: boolean): ServiceWindow {
+  if (closedDay) return "closed"; // Sunday or a listed closed date: all day
   if (now.minutes < OPEN_MIN || now.minutes >= CLOSE_MIN) return "closed";
   return now.minutes <= BREAKFAST_END_MIN ? "desayuno" : "comida";
 }
@@ -170,8 +173,91 @@ function serviceWindow(now: LocalNow): ServiceWindow {
 // null = hours not enforced for this request (pre-cutover live traffic). The
 // window is still COMPUTED and logged in that case, so `voice_events` shows
 // what the rules WOULD have done before they are switched on for real.
-function enforcedWindow(now: LocalNow): ServiceWindow | null {
-  return (HOURS_ENFORCED || now.overridden) ? serviceWindow(now) : null;
+function enforcedWindow(now: LocalNow, closedDay: boolean): ServiceWindow | null {
+  return (HOURS_ENFORCED || now.overridden) ? serviceWindow(now, closedDay) : null;
+}
+
+// ---------------------------------------------------------------------------
+// CLOSED DAYS (2026-11-16). public.karmen_dia_cerrado(date) is the single
+// source of truth every channel asks (this gateway, the WhatsApp bot, the hub).
+// If the CHECK itself fails — DB error, timeout, an answer that is not a
+// boolean — fall back to the old Sunday-only rule and log it distinctly: a
+// broken check must never close a normal day.
+const CLOSED_CHECK_TIMEOUT_MS = 2500;
+
+async function isClosedDay(date: string, call_sid: string | null): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .rpc("karmen_dia_cerrado", { p_fecha: date })
+      .abortSignal(AbortSignal.timeout(CLOSED_CHECK_TIMEOUT_MS));
+    if (error) throw new Error(error.message);
+    if (typeof data !== "boolean") throw new Error(`unexpected answer ${JSON.stringify(data)}`);
+    return data;
+  } catch (err: any) {
+    logInBackground(call_sid, "closed_check_error", {
+      date,
+      error: String(err?.message ?? err),
+      fallback: "sunday_only",
+    });
+    return weekdayOf(date) === 0;
+  }
+}
+
+function addDays(date: string, n: number): string {
+  const d = new Date(`${date}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
+  "septiembre", "octubre", "noviembre", "diciembre"];
+
+// "7:50 a.m." — derived from OPEN_MIN so the written hour can never disagree
+// with the rule that gates the door.
+function openingTimeText(): string {
+  const h24 = Math.floor(OPEN_MIN / 60);
+  const h12 = h24 % 12 || 12;
+  return `${h12}:${String(OPEN_MIN % 60).padStart(2, "0")} ${h24 < 12 ? "a.m." : "p.m."}`;
+}
+
+// "hoy a las 7:50 a.m." / "mañana martes a las 7:50 a.m." /
+// "el jueves 19 a las 7:50 a.m." (month added only when it differs from today's).
+function reopensText(today: string, on: string): string {
+  const at = `a las ${openingTimeText()}`;
+  if (on === today) return `hoy ${at}`;
+  const dia = DIAS[weekdayOf(on)];
+  if (on === addDays(today, 1)) return `mañana ${dia} ${at}`;
+  const sameMonth = on.slice(0, 7) === today.slice(0, 7);
+  const mes = sameMonth ? "" : ` de ${MESES[Number(on.slice(5, 7)) - 1]}`;
+  return `el ${dia} ${Number(on.slice(8, 10))}${mes} ${at}`;
+}
+
+// When we next take orders, for a CLOSED answer. Before opening on an open day
+// that is today; otherwise the first open date after today. Both come from
+// karmen_proxima_apertura (asked from yesterday in the first case), so the
+// weekly rule lives only in the database. A failed lookup returns nulls and is
+// logged — the closed answer itself is never held back by it.
+async function nextOpening(
+  now: LocalNow,
+  closedDay: boolean,
+  call_sid: string | null,
+): Promise<{ on: string | null; text: string | null }> {
+  const from = !closedDay && now.minutes < OPEN_MIN ? addDays(now.date, -1) : now.date;
+  try {
+    const { data, error } = await supabase
+      .rpc("karmen_proxima_apertura", { p_desde: from })
+      .abortSignal(AbortSignal.timeout(CLOSED_CHECK_TIMEOUT_MS));
+    if (error) throw new Error(error.message);
+    if (data === null) return { on: null, text: null }; // nothing open within 60 days
+    if (typeof data !== "string" || !isValidServiceDate(data)) {
+      throw new Error(`unexpected answer ${JSON.stringify(data)}`);
+    }
+    return { on: data, text: reopensText(now.date, data) };
+  } catch (err: any) {
+    logInBackground(call_sid, "reopens_check_error", { from, error: String(err?.message ?? err) });
+    return { on: null, text: null };
+  }
 }
 
 // The ONE spoken source of truth for hours. Warm, brief, states the real hours,
@@ -781,11 +867,13 @@ serve(async (req) => {
     if (!nowInit) {
       return json({ ok: false, error: "Invalid x-karmen-now-override" }, 400);
     }
-    const winInit = enforcedWindow(nowInit);
-    const shadow = serviceWindow(nowInit);
+    const closedInit = await isClosedDay(nowInit.date, null);
+    const winInit = enforcedWindow(nowInit, closedInit);
+    const shadow = serviceWindow(nowInit, closedInit);
     logInBackground(null, "conversation_init", {
       local_time: nowInit.hhmm,
       weekday: nowInit.weekday,
+      closed_day: closedInit,
       window: winInit ?? `shadow:${shadow}`,
       hours_enforced: winInit !== null,
       time_overridden: nowInit.overridden,
@@ -878,17 +966,20 @@ serve(async (req) => {
 
       // CLOSED short-circuits before any menu read: nothing to offer, and the
       // caller gets one warm, server-dictated line instead of a menu (V6).
-      const win = enforcedWindow(now);
+      const closedToday = await isClosedDay(now.date, call_sid);
+      const win = enforcedWindow(now, closedToday);
       if (win === "closed") {
         // The site short-circuits to its own closed page and normally never
         // reaches here — but it CAN: a visitor who loads at 16:49:59 passes the
         // page's clock check and arrives after the gateway's. Attributing that
         // visit matters exactly as much as attributing an open one.
+        const reopens = await nextOpening(now, closedToday, call_sid);
         logInBackground(call_sid, "get_daily_menu", {
           service_date: serviceDate,
           closed: true,
           local_time: now.hhmm,
           weekday: now.weekday,
+          closed_day: closedToday,
           time_overridden: now.overridden,
           ...visitFields(body),
         });
@@ -905,6 +996,11 @@ serve(async (req) => {
           hours: HOURS_SPOKEN,
           spoken_message: closedSpokenMessage(now),
           instruction: CLOSED_INSTRUCTION,
+          // Additive and last (2026-11-16): when orders open again, for the
+          // site's closed page. null only if the lookup failed or nothing is
+          // open within 60 days.
+          reopens_on: reopens.on,
+          reopens_text: reopens.text,
         });
       }
 
@@ -950,9 +1046,9 @@ serve(async (req) => {
       // windows) — a shadow number that could not differ from the unfiltered one
       // is decorative, and it manufactured confidence the data never earned.
       // When hours ARE enforced this is identical to `windowItemCount` by
-      // construction (`win === serviceWindow(now)`), so the field means the same
+      // construction (`win === serviceWindow(now, closedToday)`), so the field means the same
       // thing in both modes: what the window rule would serve.
-      const wouldServeItemCount = allowedCategories(serviceWindow(now))
+      const wouldServeItemCount = allowedCategories(serviceWindow(now, closedToday))
         .reduce((n, c) => n + value.menu[c].length, 0);
 
       logInBackground(call_sid, "get_daily_menu", {
@@ -964,7 +1060,7 @@ serve(async (req) => {
         // `item_count` above is what was actually served; when `hours_enforced`
         // is false the two are expected to DIFFER — if they never differ, the
         // shadow layer is not exercising the rule and proves nothing.
-        window: win ?? `shadow:${serviceWindow(now)}`,
+        window: win ?? `shadow:${serviceWindow(now, closedToday)}`,
         hours_enforced: win !== null,
         window_item_count: wouldServeItemCount,
         local_time: now.hhmm,
@@ -1075,10 +1171,11 @@ serve(async (req) => {
 
       // Closed: no quote, ever. Enforced here and not merely in the prompt, so
       // a model that "helpfully" quotes anyway still gets no number to say (V6).
-      const winCT = enforcedWindow(nowCT);
+      const closedCT = await isClosedDay(nowCT.date, call_sid);
+      const winCT = enforcedWindow(nowCT, closedCT);
       if (winCT === "closed") {
         logInBackground(call_sid, "compute_total", {
-          service_date: serviceDate, closed: true, local_time: nowCT.hhmm, blocked: true,
+          service_date: serviceDate, closed: true, local_time: nowCT.hhmm, blocked: true, closed_day: closedCT,
         });
         return json({
           ok: true,
@@ -1143,7 +1240,7 @@ serve(async (req) => {
       // `winCT ? ... : []`, so in shadow mode it was never evaluated and every
       // pre-cutover quote logged `window: null` — zero coverage on the one path
       // that can refuse a paying customer.
-      const shadowWinCT = serviceWindow(nowCT);
+      const shadowWinCT = serviceWindow(nowCT, closedCT);
       const offWindowWouldBlock = (res.breakdown as QuoteLine[] | undefined ?? [])
         .filter((l) => !allowedCategories(shadowWinCT).includes(l.categoria));
       // ACTING stays gated on winCT. When enforced, winCT === shadowWinCT (the
@@ -1221,10 +1318,13 @@ serve(async (req) => {
       // CLOSED: refuse the order outright, before validation, idempotency, or
       // any write. Nobody is in the kitchen — an accepted order here becomes a
       // ticket nobody cooks and a customer who shows up to a locked door (V6).
-      const winSO = enforcedWindow(nowSO);
+      // One-off closed dates count too (karmen_dia_cerrado): this is the guard
+      // for a voice caller whose call began before the day was closed.
+      const closedSO = await isClosedDay(nowSO.date, call_sid);
+      const winSO = enforcedWindow(nowSO, closedSO);
       if (winSO === "closed") {
         logInBackground(call_sid, "submit_order", {
-          service_date: serviceDate, closed: true, local_time: nowSO.hhmm, blocked: true,
+          service_date: serviceDate, closed: true, local_time: nowSO.hhmm, blocked: true, closed_day: closedSO,
         });
         return json({
           ok: true,
@@ -1295,7 +1395,7 @@ serve(async (req) => {
       // Computed UNCONDITIONALLY — same reasoning as compute_total above: the
       // write path is where a real order gets refused, so pre-cutover it needs
       // shadow evidence too. Observation only; ACTING stays gated on winSO.
-      const shadowWinSO = serviceWindow(nowSO);
+      const shadowWinSO = serviceWindow(nowSO, closedSO);
       const offWindowWouldBlockSO = (quote.breakdown as QuoteLine[])
         .filter((l) => !allowedCategories(shadowWinSO).includes(l.categoria));
       const offWindowSO = winSO ? offWindowWouldBlockSO : [];
