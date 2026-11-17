@@ -375,6 +375,17 @@ function visitFields(body: any): Record<string, unknown> {
   return out;
 }
 
+// Crawlers and link-preview fetchers also load the menu. TAG ONLY: the request
+// is served exactly as before; the get_daily_menu row just carries bot: true so
+// public.sitio_visitas_reales can leave it out. Absent stays absent — a
+// non-matching User-Agent adds no key, so existing rows keep their shape.
+const BOT_UA_RE =
+  /bot|crawl|spider|preview|fetch|facebookexternalhit|whatsapp|telegrambot|slack|curl|wget|python|headless/i;
+
+function botField(req: Request): Record<string, unknown> {
+  return BOT_UA_RE.test(req.headers.get("user-agent") ?? "") ? { bot: true } : {};
+}
+
 // ---------------------------------------------------------------------------
 // SITE FUNNEL EVENTS (log_event).
 //
@@ -389,6 +400,7 @@ function visitFields(body: any): Record<string, unknown> {
 const SITE_EVENTS = [
   "cart_item_added",
   "cart_item_removed", // 2026-11-15: cart-shrink telemetry from the ordering site.
+  "cart_viewed", // 2026-11-17: the site's "Tu pedido" screen was opened.
   "checkout_opened",
   "order_submitted",
   "order_failed",
@@ -982,6 +994,7 @@ serve(async (req) => {
           closed_day: closedToday,
           time_overridden: now.overridden,
           ...visitFields(body),
+          ...botField(req),
         });
         return json({
           ok: true,
@@ -1072,6 +1085,7 @@ serve(async (req) => {
         // Additive and last: every field above is untouched, and both keys are
         // absent entirely on Karmen's voice calls, which send neither.
         ...visitFields(body),
+        ...botField(req),
       });
 
       const res: Record<string, unknown> = {
